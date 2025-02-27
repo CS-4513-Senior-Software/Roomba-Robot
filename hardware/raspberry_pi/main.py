@@ -5,7 +5,7 @@ import socket
 import struct
 import serial
 #import pigpio
-# import pygame
+import pygame
 
 
 SPEED = [1, 2, 3, 4, 5, 6]
@@ -56,7 +56,7 @@ straight_ln = 1
 
 
 pulse_count_L = 0
-# pygame.init()
+pygame.init()
 # pygame.joystick.init()
 
 # if pygame.joystick.get_count() == 0:
@@ -68,18 +68,19 @@ pulse_count_L = 0
 # joystick.init()
 # print(f"Joystick connected: {joystick.get_name()}")
 
+
+axis_values = [0, 0, 0, 0]
 try:
     while True:
         
-        # pygame.event.pump()
+        pygame.event.pump()
         
-        axis_values = []
-        axis_values = [0.5, -1, 0, 0]
+        # axis_values = []
         # for i in range(4):
         #     axis_value = joystick.get_axis(i)
         #     axis_values.append(axis_value)
         
-        button_values = 4096
+        button_values = 0
         # for i in range(12):
         #     button_value = joystick.get_button(i)  # Returns 0 or 1
         #     button_values = (button_values << 1) | button_value
@@ -203,6 +204,9 @@ try:
         #data = ser.read(17)
         #disp = data.hex()
         #if data:
+
+        if (axis_values[0] + 0.01 < 1):
+            axis_values[0] += 0.01
 except KeyboardInterrupt:
     print("Exiting...")
 finally:
