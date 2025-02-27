@@ -59,32 +59,32 @@ straight_ln = 1
 
 
 pulse_count_L = 0
-pygame.init()
-pygame.joystick.init()
+# pygame.init()
+# pygame.joystick.init()
 
-if pygame.joystick.get_count() == 0:
-    print("No joystick connected.")
-    pygame.quit()
-    exit()
+# if pygame.joystick.get_count() == 0:
+#     print("No joystick connected.")
+#     pygame.quit()
+#     exit()
     
-joystick = pygame.joystick.Joystick(0)
-joystick.init()
-print(f"Joystick connected: {joystick.get_name()}")
+# joystick = pygame.joystick.Joystick(0)
+# joystick.init()
+# print(f"Joystick connected: {joystick.get_name()}")
 
 try:
     while True:
         
-        pygame.event.pump()
+        # pygame.event.pump()
         
-        axis_values = []
-        for i in range(4):
-            axis_value = joystick.get_axis(i)
-            axis_values.append(axis_value)
+        axis_values = [1, 1, 0, 0]
+        # for i in range(4):
+        #     axis_value = joystick.get_axis(i)
+        #     axis_values.append(axis_value)
         
-        button_values = 0
-        for i in range(12):
-            button_value = joystick.get_button(i)  # Returns 0 or 1
-            button_values = (button_values << 1) | button_value
+        button_values = 1
+        # for i in range(12):
+        #     button_value = joystick.get_button(i)  # Returns 0 or 1
+        #     button_values = (button_values << 1) | button_value
         
         if ser.in_waiting > 0:
             data_s = ser.read(1)
@@ -96,18 +96,18 @@ try:
             tilt = tilt_default
             pan = pan_default
         
-        if(button_values & 64):
-            speed_mode = 5
-        if(button_values & 128):
-            speed_mode = 4
-        if(button_values & 256):
-            speed_mode = 3             
-        if(button_values & 512):
-            speed_mode = 2
-        if(button_values & 1024):
-            speed_mode = 1
-        if(button_values & 2048):
-            speed_mode = 0                
+        # if(button_values & 64):
+        #     speed_mode = 5
+        # if(button_values & 128):
+        #     speed_mode = 4
+        # if(button_values & 256):
+        #     speed_mode = 3             
+        # if(button_values & 512):
+        #     speed_mode = 2
+        # if(button_values & 1024):
+        #     speed_mode = 1
+        # if(button_values & 2048):
+        #     speed_mode = 0                
         
         if(abs(axis_values[AXIS_PAN]) > axis_dead):
             pan = pan - 0.8*axis_values[AXIS_PAN]
