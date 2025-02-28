@@ -1,0 +1,2 @@
+class DigitialWriteException(Exception):
+    pass
