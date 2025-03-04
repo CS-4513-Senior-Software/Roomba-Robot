@@ -12,6 +12,7 @@ class DigitalWriteException(Exception):
     pass
 
 prev_integers = [450, 450, 0, 0]
+prev_bool_byte = 0
 SPEED = [1, 2, 3, 4, 5, 6]
 speed_mode = 0
 mc_inn = [0,0,0,0]
@@ -25,6 +26,7 @@ AXIS_LR = 0
 
 def digital_write(axis_values: list[int], easing = True, n_steps = 15):
     global prev_integers
+    global prev_bool_byte
     if len(axis_values) != 4:
         raise DigitalWriteException("Length of axis_values array must be equal to 4.")
 
@@ -56,6 +58,7 @@ def digital_write(axis_values: list[int], easing = True, n_steps = 15):
     prev_integers = []
     for i in endInts:
         prev_integers.append(i)
+    prev_bool_byte = bool_byte
 
 def get_integers_bool(axis_values: list[int]):
     global pan
@@ -191,25 +194,14 @@ pygame.init()
 
 try:
         
-    pygame.event.pump()
+    # pygame.event.pump()
     
     # axis_values = []
     # for i in range(4):
     #     axis_value = joystick.get_axis(i)
     #     axis_values.append(axis_value)
     
-    values = [
-        [0, -0.5, 0, 0],
-        [0, -0.5, 0, 0],
-        [0, -0.5, 0, 0],
-        [0, 0.5, 0, 0],
-        [0, 0.5, 0, 0],
-        [0, 0.5, 0, 0],
-        [0.5, 0, 0, 0]
-    ]
-    
-    for val in values:
-        digital_write(val)
+    pass
         
     
     # axis_values = [0, -1, 0, 0]
