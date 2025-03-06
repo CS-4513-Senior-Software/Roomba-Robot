@@ -19,12 +19,33 @@ document.addEventListener("keydown", function(e) {
         wPressed = true;
         sendData('w');
     }
+
+    if (e.key == 's') {
+        sendData('s');
+    }
+
+    if (e.key == 'a') {
+        sendData('a');
+    }
+
+    if (e.key == 'd') {
+        sendData('d');
+    }
+
+    if (e.key == 'ArrowUp') {
+        sendData('ArrowUp');
+    }
+
+    if (e.key == 'ArrowDown') {
+        sendData('ArrowDown');
+    }
+
 });
 
 document.addEventListener("keyup", function(e) {
     if(e.repeat) return;
     
-    if (e.key == 'w') {
+    if (e.key == 'w' || e.key == 's' || e.key == 'a' || e.key == 'd') {
         wPressed = false;
         sendData('stop');
     }

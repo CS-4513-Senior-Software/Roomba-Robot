@@ -26,10 +26,20 @@ def submit():
     match data["message"]:
         case 'w':
             print("w")
-            digital_write([0, 0.5, 0, 0])
+            digital_write([0, 1, 0, 0], easing=False)
+        case 's':
+            digital_write([0, -1, 0, 0], easing=False)
+        case 'a':
+            digital_write([1, 0, 0, 0], easing=False)
+        case 'd':
+            digital_write([-1, 0, 0, 0], easing=False)
+        case 'ArrowUp':
+            digital_write([0, 0, 0, 100], easing=False)
+        case 'ArrowDown':
+            digital_write([0, 0, 0, -100], easing=False)
         case "stop":
             print("stop")
-            digital_write([0, 0, 0, 0])
+            digital_write([0, 0, 0, 0], easing=False)
     
     return jsonify({'message': 'Data received successfully', 'data': data})  # Send response
 
