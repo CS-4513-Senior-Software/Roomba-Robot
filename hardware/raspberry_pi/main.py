@@ -36,6 +36,7 @@ def digital_write(axis_values: list[int], easing = True, n_steps = 15):
     
     if (not easing):
         data = struct.pack('>BIIIIB',0xFF, *endInts, bool_byte)
+        print("writing")
         ser.write(data)
         return
     
@@ -71,7 +72,7 @@ def get_integers_bool(axis_values: list[int]):
     #     button_values = (button_values << 1) | button_value
     #     #button_values.append(button_value)
         
-    print(f"axis values: {axis_values}, button values: {button_values}")
+    # print(f"axis values: {axis_values}, button values: {button_values}")
         
     #servos
     if(button_values & 1):
@@ -121,8 +122,8 @@ def get_integers_bool(axis_values: list[int]):
     R_motor = axis_values[AXIS_FB] + axis_values[AXIS_LR]
     L_motor = clamp(L_motor, -1, 1)
     R_motor = clamp(R_motor, -1, 1)
-    print("L_motor " + str(L_motor))
-    print("R_motor " + str(R_motor))
+    # print("L_motor " + str(L_motor))
+    # print("R_motor " + str(R_motor))
 
     if(abs(L_motor) > 0.01 or abs(R_motor) > 0.01):
         if(L_motor <= 0 and R_motor <= 0): # Reverse
@@ -143,6 +144,7 @@ def get_integers_bool(axis_values: list[int]):
     pan_i = int(map_range(pan, 1, 179, 150, 600))
     tilt_i = int(map_range(tilt, 1, 179, 150, 600))
     integers = [pan_i, tilt_i, pwm_l, pwm_r]
+    # print(integers)
     bool_byte = (mc_inn[0] << 0) | (mc_inn[1] << 1) | (mc_inn[2] << 2) | (mc_inn[3] << 3)
     
     return {
