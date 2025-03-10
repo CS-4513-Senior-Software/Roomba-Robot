@@ -70,6 +70,10 @@ void setup() {
 
 void loop() {
 
+  // send encoder data over serial communication
+  Serial.print(encode_L);
+  Serial.print(encode_R);
+
   //baby button board
   if (Serial.available() >= 18) {
     uint8_t check;

@@ -27,8 +27,14 @@ AXIS_LR = 0
 def digital_write(axis_values: list[int], easing = True, n_steps = 15):
     global prev_integers
     global prev_bool_byte
+    global ser
     if len(axis_values) != 4:
         raise DigitalWriteException("Length of axis_values array must be equal to 4.")
+
+    if (ser.in_waiting > 0):
+        line = ser.readline().decode('utf-8').strip()
+        print("test")
+        print(line)
 
     data = get_integers_bool(axis_values)
     endInts = data["ints"]
@@ -36,7 +42,7 @@ def digital_write(axis_values: list[int], easing = True, n_steps = 15):
     
     if (not easing):
         data = struct.pack('>BIIIIB',0xFF, *endInts, bool_byte)
-        print("writing")
+        # print("writing")
         ser.write(data)
         return
     
@@ -191,8 +197,6 @@ pygame.init()
 # joystick = pygame.joystick.Joystick(0)
 # joystick.init()
 # print(f"Joystick connected: {joystick.get_name()}")
-
-
 
 try:
         
