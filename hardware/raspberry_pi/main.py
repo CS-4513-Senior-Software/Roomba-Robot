@@ -24,6 +24,8 @@ AXIS_PAN = 2
 AXIS_FB = 1
 AXIS_LR = 0
 
+ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+
 def digital_write(axis_values: list[int], easing = True, n_steps = 15):
     global prev_integers
     global prev_bool_byte
@@ -67,6 +69,8 @@ def digital_write(axis_values: list[int], easing = True, n_steps = 15):
         prev_integers.append(i)
     prev_bool_byte = bool_byte
 
+# Process the joystick axis values and map them to motor and servo commands
+# Handle button inputs to adjust speed and reset servos
 def get_integers_bool(axis_values: list[int]):
     global pan
     global tilt
@@ -80,7 +84,7 @@ def get_integers_bool(axis_values: list[int]):
         
     # print(f"axis values: {axis_values}, button values: {button_values}")
         
-    #servos
+    # servos
     if(button_values & 1):
         tilt = tilt_default
         pan = pan_default
@@ -110,13 +114,13 @@ def get_integers_bool(axis_values: list[int]):
             tilt = 179
         if(tilt < 1):
             tilt = 1
-    
-    if(abs(axis_values[AXIS_TILT]) > axis_dead):
-        tilt = tilt - 0.8*axis_values[AXIS_TILT]
-        if(tilt > 179):
-            tilt = 179
-        if(tilt < 1):
-            tilt = 1
+    # Duplicated code?
+    # if(abs(axis_values[AXIS_TILT]) > axis_dead):
+        # tilt = tilt - 0.8*axis_values[AXIS_TILT]
+        # if(tilt > 179):
+            # tilt = 179
+        # if(tilt < 1):
+            # tilt = 1
             
         
         
@@ -157,15 +161,15 @@ def get_integers_bool(axis_values: list[int]):
         "ints": integers,
         "bool_byte": bool_byte
     }
-  
-ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
 
+# Ensure values stay within a specified range
 def clamp(value, min_value, max_value):
     """Clamp the value between min_value and max_value."""
     if(abs(value) < 0.001):
         value = 0
     return max(min(value, max_value), min_value)
 
+# Map a value from one range to another
 def map_range(value, min_old, max_old, min_new, max_new):
     return min_new + (value - min_old) * (max_new - min_new) / (max_old - min_old)
 
@@ -173,9 +177,8 @@ def map_range(value, min_old, max_old, min_new, max_new):
 time.sleep(2)  # Give Arduino time to reset
 
 # Servo
-
-pan = 120; #default straight is 120
-tilt = 100; #defalt level is 100
+pan = 120; # default straight is 120
+tilt = 100; # default level is 100
 pan_default = 120
 tilt_default = 100
 
