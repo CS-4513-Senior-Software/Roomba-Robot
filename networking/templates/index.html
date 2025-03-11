@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
+
 <body>
 
     <!-- Camera Feed Placeholder -->
@@ -30,8 +32,8 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: movement })
             }).then(response => response.json())
-              .then(data => console.log(data.message))
-              .catch(error => console.error('Error:', error));
+                .then(data => console.log(data.message))
+                .catch(error => console.error('Error:', error));
         }
 
         // Initialize joysticks
@@ -71,8 +73,13 @@
                 sendCommand();
             });
 
-            joystick.on('end', function () {
-                movement = { "LR": 0, "FB": 0, "PAN": 0, "TILT": 0 };
+            joystickLeft.on('end', function () {
+                movement = { "LR": 0, "FB": 0, "PAN": 0, "TILT": 0 };  // Stop movement
+                sendCommand();
+            });
+
+            joystickRight.on('end', function () {
+                movement = { "LR": 0, "FB": 0, "PAN": 0, "TILT": 0 };  // Stop movement
                 sendCommand();
             });
         }
@@ -101,4 +108,5 @@
         });
     </script>
 </body>
+
 </html>

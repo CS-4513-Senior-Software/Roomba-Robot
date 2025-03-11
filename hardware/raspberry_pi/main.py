@@ -28,23 +28,29 @@ def digital_write(axis_values: list[int], easing = True, n_steps = 15):
     global prev_integers
     global prev_bool_byte
     global ser
-    if len(axis_values) != 4:
-        raise DigitalWriteException("Length of axis_values array must be equal to 4.")
+    try:
+        if len(axis_values) != 4:
+            raise DigitalWriteException("Length of axis_values array must be equal to 4.")
 
-    if (ser.in_waiting > 0):
-        line = ser.readline().decode('utf-8').strip()
-        print("test")
-        print(line)
+        if (ser.in_waiting > 0):
+            line = ser.readline().decode('utf-8').strip()
+            print("test")
+            print(line)
 
-    data = get_integers_bool(axis_values)
-    endInts = data["ints"]
-    bool_byte = data["bool_byte"]
+        data = get_integers_bool(axis_values)
+        endInts = data["ints"]
+        bool_byte = data["bool_byte"]
     
-    if (not easing):
-        data = struct.pack('>BIIIIB',0xFF, *endInts, bool_byte)
-        # print("writing")
-        ser.write(data)
-        return
+        if (not easing):
+            data = struct.pack('>BIIIIB',0xFF, *endInts, bool_byte)
+            # print("writing")
+            ser.write(data)
+            return
+    except serial.SerialException as e:
+        print(f"Serial Exception: {e}")
+
+    except Exception as e:
+        print(f"General Error: {e}")
     
     
     stepSize0 = math.ceil((endInts[0] - prev_integers[0]) / n_steps)
@@ -157,8 +163,13 @@ def get_integers_bool(axis_values: list[int]):
         "ints": integers,
         "bool_byte": bool_byte
     }
-  
-ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+try:  
+    ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+    print("Serial port connected successfully")
+
+except serial.SerialException:
+    print("ERROR: Unable to connect to serial port. Check USB connection.")
+    exit()
 
 def clamp(value, min_value, max_value):
     """Clamp the value between min_value and max_value."""
