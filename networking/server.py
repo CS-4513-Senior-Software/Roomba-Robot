@@ -1,7 +1,6 @@
 from flask import *
 import sys
 import os
-import subprocess
 
 # subprocess.run(["python", "../hardware/raspberry_pi/main.py"])  # Runs script.py as a separate process
 
@@ -24,6 +23,7 @@ def writeRequest():
     msg = data["message"]
     axis_values = [msg["LR"], msg["FB"], msg["PAN"], msg["TILT"]]
     
+    print(f"Received: {axis_values}")  # Debugging log
     digital_write(axis_values, easing=False)
     
     return jsonify({'message': 'Data received successfully', 'data': data})  # Send response
