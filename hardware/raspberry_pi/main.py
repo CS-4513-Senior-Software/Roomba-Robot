@@ -48,7 +48,7 @@ def digital_write(axis_values: list[int], easing = True, n_steps = 15):
         ser.write(data)
         return
     
-    
+    # should we remove math.ceil function from stepSize calculation?
     stepSize0 = math.ceil((endInts[0] - prev_integers[0]) / n_steps)
     stepSize1 = math.ceil((endInts[1] - prev_integers[1]) / n_steps)
     stepSize2 = math.ceil((endInts[2] - prev_integers[2]) / n_steps)
@@ -62,6 +62,15 @@ def digital_write(axis_values: list[int], easing = True, n_steps = 15):
             prev_integers[j] += stepSize
             data = struct.pack('>BIIIIB',0xFF, *prev_integers, bool_byte)
             ser.write(data)
+    
+    # Possible changes
+    # for i in range(n_steps):
+    #    for j in range(4):
+    #        prev_integers[j] += stepSizes[j]
+    #    # Convert floating-point values to integers when sending the data
+    #    data = struct.pack('>BIIIIB', 0xFF, *map(int, prev_integers), bool_byte)
+    #    ser.write(data)
+    #    time.sleep(0.01)  # Add a small delay to ensure smooth transition
     
     # copy endInts into prev_integers
     prev_integers = []
@@ -114,7 +123,7 @@ def get_integers_bool(axis_values: list[int]):
             tilt = 179
         if(tilt < 1):
             tilt = 1
-    # Duplicated code?
+    
     # if(abs(axis_values[AXIS_TILT]) > axis_dead):
         # tilt = tilt - 0.8*axis_values[AXIS_TILT]
         # if(tilt > 179):
