@@ -22,7 +22,7 @@ function sendWriteRequest(msg) {
     .catch(error => console.error("Error:", error));
 }
 
-// runs every 1 ms
+// runs every 20 ms
 function update() {
 
     // ensure axis_value LR and FB elements do not go outside the range [-1, 1]
