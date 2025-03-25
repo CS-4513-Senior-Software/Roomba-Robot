@@ -36,20 +36,6 @@ function update() {
         }
     }
 
-    // // ensure axis_value TILT and PAN elements do not go outside the range [1, 179]
-    // for (let i = 2; i < axis_values.length; i++) {
-    //     if (axis_values[i] > 179) {
-    //         axis_values[i] = 179;
-    //     }
-
-    //     if (axis_values[i] < 1) {
-    //         axis_values[i] = 1;
-    //     }
-    // }
-
-    console.log(axis_values);
-
-
     if (!equals(prev_write_request, axis_values) || axis_values[PAN_idx] != 0 || axis_values[TILT_idx] != 0) {
         console.log("write");
         sendWriteRequest(axis_values);
@@ -59,9 +45,59 @@ function update() {
         }
     }
 
-
     setTimeout(update, 20); // loop again
 }
+
+// joystick controls
+
+// Initialize joysticks
+let joystickLeft = nipplejs.create({
+    zone: document.getElementById('joystick-left'),
+    mode: 'static',
+    position: { left: '25%', bottom: '15%' },
+    color: 'blue'
+});
+
+let joystickRight = nipplejs.create({
+    zone: document.getElementById('joystick-right'),
+    mode: 'static',
+    position: { right: '25%', bottom: '15%' },
+    color: 'red'
+});
+
+function handleJoystick(joystick, side) {
+    joystick.on('move', function (evt, data) {
+        let angle = data.angle.degree;
+        let force = data.force;
+
+        if (force < 0.3) return;
+
+        if (side === 'left') {
+            if (angle >= 45 && angle < 135) { axis_values[FB_idx] += 1; }
+            else if (angle >= 135 && angle < 225) { axis_values[LR_idx] += 1; }
+            else if (angle >= 225 && angle < 315) { axis_values[FB_idx] += -1; }
+            else { axis_values[LR_idx] += -1 };
+        } else if (side === 'right') {
+            if (angle >= 45 && angle < 135) { axis_values[PAN_idx] += 1 }
+            else if (angle >= 135 && angle < 225) { axis_values[PAN_idx] += -1 }
+            else if (angle >= 225 && angle < 315) { axis_values[TILT_idx] += -1 }
+            else { axis_values[TILT_idx] += 1 }
+        }
+    });
+
+    joystickLeft.on('end', function () {
+        axis_values = [0, 0, 0, 0];  // Stop movement
+    });
+
+    joystickRight.on('end', function () {
+        axis_values = [0, 0, 0, 0];  // Stop movement
+    });
+}
+
+handleJoystick(joystickLeft, "left");
+handleJoystick(joystickRight, "right");
+
+// keyboard controls
 
 document.addEventListener("keydown", function(e) {
     if (e.repeat) return;
