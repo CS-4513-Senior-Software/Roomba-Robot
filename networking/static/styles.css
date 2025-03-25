@@ -15,7 +15,6 @@ body {
 #camera-feed {
     width: 70%;
     height: 50%;
-    background-color: black;
     border: 3px solid white;
     margin-bottom: 20px;
     display: flex;

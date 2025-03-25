@@ -7,9 +7,20 @@ import serial
 from serial import Serial
 import pygame
 import typing
+from picamera2 import Picamera2
+import cv2
+import io
 
 class DigitalWriteException(Exception):
     pass
+
+cam = Picamera2()
+cam.preview_configuration.main.size = (640, 480)
+cam.preview_configuration.main.format = "RGB888"
+cam.configure("video")
+
+cam.start()
+time.sleep(2) # allow camera to conduct auto exposure adjustments
 
 prev_integers = [450, 450, 0, 0]
 prev_bool_byte = 0
@@ -23,6 +34,16 @@ AXIS_TILT = 3
 AXIS_PAN = 2
 AXIS_FB = 1
 AXIS_LR = 0
+
+def generate_frames():
+    """Generator function to capture frames from Pi Camera and yield them as JPEGs."""
+    while True:
+        frame = cam.capture_array()
+        _, buffer = cv2.imencode('.jpg', frame)
+        frame_bytes = buffer.tobytes()
+
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
 def digital_write(axis_values: list[int], easing = True, n_steps = 15):
     global prev_integers

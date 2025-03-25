@@ -9,13 +9,17 @@ script_dir = os.path.dirname(os.path.abspath(__file__))  # Current script dir
 target_path = os.path.abspath(os.path.join(script_dir, "../hardware/raspberry_pi"))
 sys.path.append(target_path)
 
-from main import digital_write
+from main import digital_write, generate_frames
 
 app = Flask(__name__)
 
 @app.route("/")
 def home():
     return render_template("index.html")
+
+@app.route('/videoFeed')
+def videoFeed():
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/writeRequest', methods=['POST'])
 def writeRequest():
