@@ -8,21 +8,25 @@ Feburary-May 2025
 
 ## Team Members
 Anastasia Reed, Back-End Developer
+
 Picture:
 
 Bio:
 
 Caleb Tietz, Back-End Lead
+
 Picture:
 
 Bio:
 
 Rhea Katari, Front-End Developer
+
 Picture:
 
 Bio:
 
 Riley Raasch, Project and Front-End Lead
+
 Picture:
 
 Bio:
