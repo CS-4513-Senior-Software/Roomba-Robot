@@ -7,7 +7,25 @@ A Software Application for Making a Robot Autonomous in an OptiTrack Environment
 Feburary-May 2025
 
 ## Team Members
-Anastasia Reed, Caleb Tietz, Rhea Katari, and Riley Raasch
+Anastasia Reed, Back-End Developer
+Picture:
+
+Bio:
+
+Caleb Tietz, Back-End Lead
+Picture:
+
+Bio:
+
+Rhea Katari, Front-End Developer
+Picture:
+
+Bio:
+
+Riley Raasch, Project and Front-End Lead
+Picture:
+
+Bio:
 
 ## Faculty Supervisor
 Will Friedel
