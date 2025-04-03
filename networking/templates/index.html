@@ -19,9 +19,16 @@
         <div id="joystick-left"></div>
         <div id="joystick-right"></div>
     </div>
-
-    <!-- Battery Percentage Display -->
-    <div id="battery">Battery: 100%</div>
+    
+<!-- Automation Drop-Up Menu -->
+<div id="automation-menu">
+    <button class="dropbtn">Automation</button>
+    <div class="dropup-content">
+        <a href="#" onclick="runAutomation('nod')">Nod Yes</a>
+        <a href="#" onclick="runAutomation('shake')">Shake No</a>
+        <a href="#" onclick="runAutomation('race')">Race</a>
+    </div>
+</div>
 
     <script src="{{ url_for('static', filename='js/index.js') }}"></script>
     <!-- <script>

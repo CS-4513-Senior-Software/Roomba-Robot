@@ -36,14 +36,51 @@ body {
     height: 150px;
 }
 
-/* Battery Percentage Box */
-#battery {
+/* Drop-Up Menu for Automation */
+#automation-menu {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background-color: #333;
-    color: limegreen;
-    padding: 10px 20px;
-    border-radius: 10px;
-    font-size: 18px;
+    bottom: 10px;
+    left: 10px;
+    z-index: 1000;
+}
+
+#automation-menu .dropbtn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+#automation-menu .dropup-content {
+    display: none;
+    position: absolute;
+    bottom: 40px;
+    left: 0;
+    background-color: #f9f9f9;
+    min-width: 120px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: 6px;
+}
+
+#automation-menu .dropup-content a {
+    color: black;
+    padding: 8px 12px;
+    text-decoration: none;
+    display: block;
+}
+
+#automation-menu .dropup-content a:hover {
+    background-color: #f1f1f1;
+}
+
+#automation-menu:hover .dropup-content {
+    display: block;
+}
+
+#automation-menu:hover .dropbtn {
+    background-color: #3e8e41;
 }

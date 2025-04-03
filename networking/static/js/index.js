@@ -171,4 +171,47 @@ function equals(arr1, arr2) {
     return true;
 }
 
+function runAutomation(action) {
+    console.log("Running automation:", action);
+
+    switch(action) {
+        case 'nod':
+            // Tilt up
+            axis_values[TILT_idx] = -1;
+            sendWriteRequest(axis_values);
+            setTimeout(() => {
+                // Tilt down
+                axis_values[TILT_idx] = 1;
+                sendWriteRequest(axis_values);
+                setTimeout(() => {
+                    // Stop movement
+                    axis_values[TILT_idx] = 0;
+                    sendWriteRequest(axis_values);
+                }, 200);
+            }, 200);
+            break;
+
+        case 'shake':
+            // Pan right
+            axis_values[PAN_idx] = 1;
+            sendWriteRequest(axis_values);
+            setTimeout(() => {
+                // Pan left
+                axis_values[PAN_idx] = -1;
+                sendWriteRequest(axis_values);
+                setTimeout(() => {
+                    // Stop movement
+                    axis_values[PAN_idx] = 0;
+                    sendWriteRequest(axis_values);
+                }, 200);
+            }, 200);
+            break;
+
+        case 'race':
+            // Placeholder for Opti Track Lab Laps
+            console.log("Race mode coming soon!");
+            break;
+    }
+}
+
 update(); // start update loop
