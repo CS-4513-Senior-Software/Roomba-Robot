@@ -45,7 +45,7 @@ body {
 }
 
 #automation-menu .dropbtn {
-    background-color: #4CAF50;
+    background-color: black;
     color: white;
     padding: 10px;
     font-size: 16px;
@@ -59,22 +59,21 @@ body {
     position: absolute;
     bottom: 40px;
     left: 0;
-    background-color: #f9f9f9;
-    min-width: 120px;
+    background-color: #4e4e4e;
     box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
     z-index: 1;
     border-radius: 6px;
 }
 
 #automation-menu .dropup-content a {
-    color: black;
+    color: white;
     padding: 8px 12px;
     text-decoration: none;
     display: block;
 }
 
 #automation-menu .dropup-content a:hover {
-    background-color: #f1f1f1;
+    background-color: rgb(65, 65, 65);
 }
 
 #automation-menu:hover .dropup-content {
@@ -82,5 +81,5 @@ body {
 }
 
 #automation-menu:hover .dropbtn {
-    background-color: #3e8e41;
+    background-color: rgb(65, 65, 65);
 }

@@ -187,8 +187,8 @@ function runAutomation(action) {
                     // Stop movement
                     axis_values[TILT_idx] = 0;
                     sendWriteRequest(axis_values);
-                }, 200);
-            }, 200);
+                }, 500);
+            }, 500);
             break;
 
         case 'shake':
@@ -203,8 +203,8 @@ function runAutomation(action) {
                     // Stop movement
                     axis_values[PAN_idx] = 0;
                     sendWriteRequest(axis_values);
-                }, 200);
-            }, 200);
+                }, 500);
+            }, 500);
             break;
 
         case 'race':
