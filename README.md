@@ -29,7 +29,7 @@ Riley Raasch, Project and Front-End Lead
 
 Picture:
 
-Bio:
+Bio: I am a Computer Science major, minoring in Cyber Security and Mathematics. Currently, I am working at the Bank of Oklahoma as an information security intern. Outside of school and work, you'll most likely find me watching Doctor Who, playing video games, or spoiling my cat.
 
 ## Faculty Supervisor
 Will Friedel
