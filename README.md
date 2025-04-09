@@ -11,7 +11,7 @@ Anastasia Reed, Back-End Developer
 
 Picture:
 
-Bio:
+Bio: I am a Computer Science major, minoring in Mathematics. When I'm not working or studying, I'm usually reading, playing video games, or painting.
 
 Caleb Tietz, Back-End Lead
 
