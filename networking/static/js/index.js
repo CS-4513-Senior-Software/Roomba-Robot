@@ -63,6 +63,36 @@ function update() {
     setTimeout(update, 20); // loop again
 }
 
+// Detect gamepad connection
+window.addEventListener("gamepadconnected", (event) => {
+    console.log("Gamepad connected:", event.gamepad);
+});
+
+// Detect gamepad disconnection
+window.addEventListener("gamepaddisconnected", (event) => {
+    console.log("Gamepad disconnected:", event.gamepad);
+});
+
+// Polling for gamepad input
+function pollGamepad() {
+    const gamepads = navigator.getGamepads();
+    if (gamepads[0]) { // Use first connected gamepad
+        const gamepad = gamepads[0];
+
+        // Map gamepad axes to robot controls
+        axis_values[LR_idx] = gamepad.axes[0]; // Left/Right (LR)
+        axis_values[FB_idx] = -gamepad.axes[1]; // Forward/Backward (FB) (invert Y-axis)
+        axis_values[PAN_idx] = gamepad.axes[2]; // Pan
+        axis_values[TILT_idx] = -gamepad.axes[3]; // Tilt (invert Y-axis)
+
+        // Log gamepad input for debugging
+        console.log("Gamepad axes:", gamepad.axes);
+        console.log("Gamepad buttons:", gamepad.buttons);
+    }
+
+    requestAnimationFrame(pollGamepad); // Continue polling
+}
+
 document.addEventListener("keydown", function(e) {
     if (e.repeat) return;
     
@@ -134,5 +164,7 @@ function equals(arr1, arr2) {
 
     return true;
 }
+
+pollGamepad(); // Start polling for gamepad input
 
 update(); // start update loop
