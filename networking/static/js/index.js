@@ -6,6 +6,8 @@ let FB_idx = 1;
 let PAN_idx = 2;
 let TILT_idx = 3;
 
+let activeInput = "none"; // Tracks the active input method i.e., gamepad, joystick, or keyboard
+
 function sendWriteRequest(msg) {
     fetch('/writeRequest', {
         method: 'POST',
@@ -86,6 +88,7 @@ function handleJoystick(joystick, side) {
     });
 
     joystickLeft.on('end', function () {
+        activeInput = "joystick";
         axis_values = [0, 0, 0, 0];  // Stop movement
     });
 
@@ -98,8 +101,9 @@ handleJoystick(joystickLeft, "left");
 handleJoystick(joystickRight, "right");
 
 // keyboard controls
-
 document.addEventListener("keydown", function(e) {
+    activeInput = "keyboard";
+
     if (e.repeat) return;
     
     switch (e.key) {
@@ -170,6 +174,38 @@ function equals(arr1, arr2) {
 
     return true;
 }
+
+// Clamping function to ensure values are within a specified range
+function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}
+
+// Polling for gamepad input
+function pollGamepad() {
+    const gamepads = navigator.getGamepads();
+    activeInput = "gamepad";
+    if (gamepads[0]) { // Use the first connected gamepad
+        const gamepad = gamepads[0];
+
+        // Map gamepad axes to robot controls with clamping
+        axis_values[LR_idx] = clamp(gamepad.axes[0], -1, 1);  // Left/Right (LR)
+        axis_values[FB_idx] = clamp(-gamepad.axes[1], -1, 1); // Forward/Backward (FB) (invert Y-axis)
+        axis_values[PAN_idx] = clamp(gamepad.axes[2], -1, 1); // Pan
+        axis_values[TILT_idx] = clamp(-gamepad.axes[3], -1, 1); // Tilt (invert Y-axis)
+    }
+
+    requestAnimationFrame(pollGamepad); // Continue polling
+}
+
+window.addEventListener("gamepadconnected", (event) => {
+    console.log("Gamepad connected:", event.gamepad);
+});
+
+window.addEventListener("gamepaddisconnected", (event) => {
+    console.log("Gamepad disconnected:", event.gamepad);
+    axis_values = [0, 0, 0, 0]; // Reset axis values
+});
+
 
 pollGamepad(); // Start polling for gamepad input
 
