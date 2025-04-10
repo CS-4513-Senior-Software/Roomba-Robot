@@ -7,9 +7,20 @@ import serial
 from serial import Serial
 import pygame
 import typing
+from picamera2 import Picamera2
+import cv2
+import io
 
 class DigitalWriteException(Exception):
     pass
+
+cam = Picamera2()
+cam.preview_configuration.main.size = (640, 480)
+cam.preview_configuration.main.format = "RGB888"
+cam.configure("video")
+
+cam.start()
+time.sleep(2) # allow camera to conduct auto exposure adjustments
 
 prev_integers = [450, 450, 0, 0]
 prev_bool_byte = 0
@@ -24,29 +35,43 @@ AXIS_PAN = 2
 AXIS_FB = 1
 AXIS_LR = 0
 
-ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+def generate_frames():
+    """Generator function to capture frames from Pi Camera and yield them as JPEGs."""
+    while True:
+        frame = cam.capture_array()
+        _, buffer = cv2.imencode('.jpg', frame)
+        frame_bytes = buffer.tobytes()
+
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
 def digital_write(axis_values: list[int], easing = True, n_steps = 15):
     global prev_integers
     global prev_bool_byte
     global ser
-    if len(axis_values) != 4:
-        raise DigitalWriteException("Length of axis_values array must be equal to 4.")
+    try:
+        if len(axis_values) != 4:
+            raise DigitalWriteException("Length of axis_values array must be equal to 4.")
 
-    if (ser.in_waiting > 0):
-        line = ser.readline().decode('utf-8').strip()
-        print("test")
-        print(line)
+        if (ser.in_waiting > 0):
+            line = ser.readline().decode('utf-8').strip()
+            print("test")
+            print(line)
 
-    data = get_integers_bool(axis_values)
-    endInts = data["ints"]
-    bool_byte = data["bool_byte"]
+        data = get_integers_bool(axis_values)
+        endInts = data["ints"]
+        bool_byte = data["bool_byte"]
     
-    if (not easing):
-        data = struct.pack('>BIIIIB',0xFF, *endInts, bool_byte)
-        # print("writing")
-        ser.write(data)
-        return
+        if (not easing):
+            data = struct.pack('>BIIIIB',0xFF, *endInts, bool_byte)
+            # print("writing")
+            ser.write(data)
+            return
+    except serial.SerialException as e:
+        print(f"Serial Exception: {e}")
+
+    except Exception as e:
+        print(f"General Error: {e}")
     
     # should we remove math.ceil function from stepSize calculation?
     stepSize0 = math.ceil((endInts[0] - prev_integers[0]) / n_steps)
@@ -170,6 +195,14 @@ def get_integers_bool(axis_values: list[int]):
         "ints": integers,
         "bool_byte": bool_byte
     }
+  
+try:  
+    ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+    print("Serial port connected successfully")
+
+except serial.SerialException:
+    print("ERROR: Unable to connect to serial port. Check USB connection.")
+    exit()
 
 # Ensure values stay within a specified range
 def clamp(value, min_value, max_value):
