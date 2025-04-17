@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roomba Control Interface</title>
+    <script src="{{ url_for('static', filename='js/nipplejs.min.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+
+<!-- Change View Button -->
+<button id="changeViewBtn" class="controlbtn">
+    Change View
+  </button>
+  
+<!-- Camera Feed -->
+<img id="camera-feed" src="{{ url_for('videoFeed') }}" width="640" height="480">
+
+<!-- Map View (initially hidden) -->
+<div id="map-view">
+    <p>[OptiTrack point and click map coming soon]</p>
+</div>
+
+<!-- Joystick Controls -->
+<div id="joystick-container">
+    <div id="joystick-left"></div>
+    <div id="joystick-right"></div>
+</div>
+    
+<!-- Automation Drop-Up Menu -->
+<div id="automation-menu">
+    <button class="dropbtn">Automation</button>
+    <div class="dropup-content">
+        <a href="#" onclick="runAutomation('nod')">Nod Yes</a>
+        <a href="#" onclick="runAutomation('shake')">Shake No</a>
+        <a href="#" onclick="runAutomation('race')">Race</a>
+    </div>
+</div>
+
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+    <!-- <script>
+        let movement = { "LR": 0, "FB": 0, "PAN": 0, "TILT": 0 };
+
+        function sendCommand() {
+            fetch('/writeRequest', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: movement })
+            }).then(response => response.json())
+                .then(data => console.log(data.message))
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Initialize joysticks
+        var joystickLeft = nipplejs.create({
+            zone: document.getElementById('joystick-left'),
+            mode: 'static',
+            position: { left: '25%', bottom: '15%' },
+            color: 'blue'
+        });
+
+        var joystickRight = nipplejs.create({
+            zone: document.getElementById('joystick-right'),
+            mode: 'static',
+            position: { right: '25%', bottom: '15%' },
+            color: 'red'
+        });
+
+        function handleJoystick(joystick, side) {
+            joystick.on('move', function (evt, data) {
+                let angle = data.angle.degree;
+                let force = data.force;
+
+                if (force < 0.3) return;
+
+                if (side === 'left') {
+                    if (angle >= 45 && angle < 135) movement = { "LR": 0, "FB": 1, "PAN": 0, "TILT": 0 };
+                    else if (angle >= 135 && angle < 225) movement = { "LR": -1, "FB": 0, "PAN": 0, "TILT": 0 };
+                    else if (angle >= 225 && angle < 315) movement = { "LR": 0, "FB": -1, "PAN": 0, "TILT": 0 };
+                    else movement = { "LR": 1, "FB": 0, "PAN": 0, "TILT": 0 };
+                } else if (side === 'right') {
+                    if (angle >= 45 && angle < 135) movement = { "LR": 0, "FB": 0, "PAN": 1, "TILT": 0 };
+                    else if (angle >= 135 && angle < 225) movement = { "LR": 0, "FB": 0, "PAN": -1, "TILT": 0 };
+                    else if (angle >= 225 && angle < 315) movement = { "LR": 0, "FB": 0, "PAN": 0, "TILT": -1 };
+                    else movement = { "LR": 0, "FB": 0, "PAN": 0, "TILT": 1 };
+                }
+
+                sendCommand();
+            });
+
+            joystickLeft.on('end', function () {
+                movement = { "LR": 0, "FB": 0, "PAN": 0, "TILT": 0 };  // Stop movement
+                sendCommand();
+            });
+
+            joystickRight.on('end', function () {
+                movement = { "LR": 0, "FB": 0, "PAN": 0, "TILT": 0 };  // Stop movement
+                sendCommand();
+            });
+        }
+
+        handleJoystick(joystickLeft, "left");
+        handleJoystick(joystickRight, "right");
+
+        // Keyboard controls
+        document.addEventListener("keydown", (event) => {
+            switch (event.key) {
+                case "w": movement = { "LR": 0, "FB": 1, "PAN": 0, "TILT": 0 }; break;
+                case "s": movement = { "LR": 0, "FB": -1, "PAN": 0, "TILT": 0 }; break;
+                case "a": movement = { "LR": -1, "FB": 0, "PAN": 0, "TILT": 0 }; break;
+                case "d": movement = { "LR": 1, "FB": 0, "PAN": 0, "TILT": 0 }; break;
+                case "ArrowUp": movement = { "LR": 0, "FB": 0, "PAN": 0, "TILT": 1 }; break;
+                case "ArrowDown": movement = { "LR": 0, "FB": 0, "PAN": 0, "TILT": -1 }; break;
+                case "ArrowLeft": movement = { "LR": 0, "FB": 0, "PAN": -1, "TILT": 0 }; break;
+                case "ArrowRight": movement = { "LR": 0, "FB": 0, "PAN": 1, "TILT": 0 }; break;
+            }
+            sendCommand();
+        });
+
+        document.addEventListener("keyup", () => {
+            movement = { "LR": 0, "FB": 0, "PAN": 0, "TILT": 0 };
+            sendCommand();
+        });
+    </script> -->
+</body>
+
+</html>

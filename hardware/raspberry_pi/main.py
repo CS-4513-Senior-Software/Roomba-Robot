@@ -7,9 +7,20 @@ import serial
 from serial import Serial
 import pygame
 import typing
+from picamera2 import Picamera2
+import cv2
+import io
 
 class DigitalWriteException(Exception):
     pass
+
+cam = Picamera2()
+cam.preview_configuration.main.size = (640, 480)
+cam.preview_configuration.main.format = "RGB888"
+cam.configure("video")
+
+cam.start()
+time.sleep(2) # allow camera to conduct auto exposure adjustments
 
 prev_integers = [450, 450, 0, 0]
 prev_bool_byte = 0
@@ -24,22 +35,45 @@ AXIS_PAN = 2
 AXIS_FB = 1
 AXIS_LR = 0
 
+def generate_frames():
+    """Generator function to capture frames from Pi Camera and yield them as JPEGs."""
+    while True:
+        frame = cam.capture_array()
+        _, buffer = cv2.imencode('.jpg', frame)
+        frame_bytes = buffer.tobytes()
+
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+
 def digital_write(axis_values: list[int], easing = True, n_steps = 15):
     global prev_integers
     global prev_bool_byte
-    if len(axis_values) != 4:
-        raise DigitalWriteException("Length of axis_values array must be equal to 4.")
+    global ser
+    try:
+        if len(axis_values) != 4:
+            raise DigitalWriteException("Length of axis_values array must be equal to 4.")
 
-    data = get_integers_bool(axis_values)
-    endInts = data["ints"]
-    bool_byte = data["bool_byte"]
+        if (ser.in_waiting > 0):
+            line = ser.readline().decode('utf-8').strip()
+            print("test")
+            print(line)
+
+        data = get_integers_bool(axis_values)
+        endInts = data["ints"]
+        bool_byte = data["bool_byte"]
     
-    if (not easing):
-        data = struct.pack('>BIIIIB',0xFF, *endInts, bool_byte)
-        ser.write(data)
-        return
+        if (not easing):
+            data = struct.pack('>BIIIIB',0xFF, *endInts, bool_byte)
+            # print("writing")
+            ser.write(data)
+            return
+    except serial.SerialException as e:
+        print(f"Serial Exception: {e}")
+
+    except Exception as e:
+        print(f"General Error: {e}")
     
-    
+    # should we remove math.ceil function from stepSize calculation?
     stepSize0 = math.ceil((endInts[0] - prev_integers[0]) / n_steps)
     stepSize1 = math.ceil((endInts[1] - prev_integers[1]) / n_steps)
     stepSize2 = math.ceil((endInts[2] - prev_integers[2]) / n_steps)
@@ -54,12 +88,23 @@ def digital_write(axis_values: list[int], easing = True, n_steps = 15):
             data = struct.pack('>BIIIIB',0xFF, *prev_integers, bool_byte)
             ser.write(data)
     
+    # Possible changes
+    # for i in range(n_steps):
+    #    for j in range(4):
+    #        prev_integers[j] += stepSizes[j]
+    #    # Convert floating-point values to integers when sending the data
+    #    data = struct.pack('>BIIIIB', 0xFF, *map(int, prev_integers), bool_byte)
+    #    ser.write(data)
+    #    time.sleep(0.01)  # Add a small delay to ensure smooth transition
+    
     # copy endInts into prev_integers
     prev_integers = []
     for i in endInts:
         prev_integers.append(i)
     prev_bool_byte = bool_byte
 
+# Process the joystick axis values and map them to motor and servo commands
+# Handle button inputs to adjust speed and reset servos
 def get_integers_bool(axis_values: list[int]):
     global pan
     global tilt
@@ -71,9 +116,9 @@ def get_integers_bool(axis_values: list[int]):
     #     button_values = (button_values << 1) | button_value
     #     #button_values.append(button_value)
         
-    print(f"axis values: {axis_values}, button values: {button_values}")
+    # print(f"axis values: {axis_values}, button values: {button_values}")
         
-    #servos
+    # servos
     if(button_values & 1):
         tilt = tilt_default
         pan = pan_default
@@ -104,12 +149,12 @@ def get_integers_bool(axis_values: list[int]):
         if(tilt < 1):
             tilt = 1
     
-    if(abs(axis_values[AXIS_TILT]) > axis_dead):
-        tilt = tilt - 0.8*axis_values[AXIS_TILT]
-        if(tilt > 179):
-            tilt = 179
-        if(tilt < 1):
-            tilt = 1
+    # if(abs(axis_values[AXIS_TILT]) > axis_dead):
+        # tilt = tilt - 0.8*axis_values[AXIS_TILT]
+        # if(tilt > 179):
+            # tilt = 179
+        # if(tilt < 1):
+            # tilt = 1
             
         
         
@@ -121,8 +166,8 @@ def get_integers_bool(axis_values: list[int]):
     R_motor = axis_values[AXIS_FB] + axis_values[AXIS_LR]
     L_motor = clamp(L_motor, -1, 1)
     R_motor = clamp(R_motor, -1, 1)
-    print("L_motor " + str(L_motor))
-    print("R_motor " + str(R_motor))
+    # print("L_motor " + str(L_motor))
+    # print("R_motor " + str(R_motor))
 
     if(abs(L_motor) > 0.01 or abs(R_motor) > 0.01):
         if(L_motor <= 0 and R_motor <= 0): # Reverse
@@ -143,6 +188,7 @@ def get_integers_bool(axis_values: list[int]):
     pan_i = int(map_range(pan, 1, 179, 150, 600))
     tilt_i = int(map_range(tilt, 1, 179, 150, 600))
     integers = [pan_i, tilt_i, pwm_l, pwm_r]
+    # print(integers)
     bool_byte = (mc_inn[0] << 0) | (mc_inn[1] << 1) | (mc_inn[2] << 2) | (mc_inn[3] << 3)
     
     return {
@@ -150,14 +196,22 @@ def get_integers_bool(axis_values: list[int]):
         "bool_byte": bool_byte
     }
   
-ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+try:  
+    ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+    print("Serial port connected successfully")
 
+except serial.SerialException:
+    print("ERROR: Unable to connect to serial port. Check USB connection.")
+    exit()
+
+# Ensure values stay within a specified range
 def clamp(value, min_value, max_value):
     """Clamp the value between min_value and max_value."""
     if(abs(value) < 0.001):
         value = 0
     return max(min(value, max_value), min_value)
 
+# Map a value from one range to another
 def map_range(value, min_old, max_old, min_new, max_new):
     return min_new + (value - min_old) * (max_new - min_new) / (max_old - min_old)
 
@@ -165,9 +219,8 @@ def map_range(value, min_old, max_old, min_new, max_new):
 time.sleep(2)  # Give Arduino time to reset
 
 # Servo
-
-pan = 120; #default straight is 120
-tilt = 100; #defalt level is 100
+pan = 120; # default straight is 120
+tilt = 100; # default level is 100
 pan_default = 120
 tilt_default = 100
 
@@ -189,8 +242,6 @@ pygame.init()
 # joystick = pygame.joystick.Joystick(0)
 # joystick.init()
 # print(f"Joystick connected: {joystick.get_name()}")
-
-
 
 try:
         
