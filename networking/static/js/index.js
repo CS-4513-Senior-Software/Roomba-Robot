@@ -215,3 +215,17 @@ function runAutomation(action) {
 }
 
 update(); // start update loop
+
+// Toggle View Logic
+document.getElementById("changeViewBtn").addEventListener("click", () => {
+    const camera = document.getElementById("camera-feed");
+    const map = document.getElementById("map-view");
+
+    if (camera.style.display === "none") {
+        camera.style.display = "block";
+        map.style.display = "none";
+    } else {
+        camera.style.display = "none";
+        map.style.display = "block";
+    }
+});
