@@ -6,15 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roomba Control Interface</title>
     <script src="{{ url_for('static', filename='js/nipplejs.min.js') }}"></script>
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 
 <body>
 
 <!-- Change View Button -->
-<button id="changeViewBtn" style="position: absolute; top: 10px; left: 10px; z-index: 1000;">Change View</button>
-
+<button id="changeViewBtn" class="controlbtn">
+    Change View
+  </button>
+  
 <!-- Camera Feed -->
 <img id="camera-feed" src="{{ url_for('videoFeed') }}" width="640" height="480">
 

@@ -83,3 +83,22 @@ body {
 #automation-menu:hover .dropbtn {
     background-color: rgb(65, 65, 65);
 }
+
+/* Change View Button - match Automation style */
+.controlbtn {
+    background-color: black;
+    color: white;
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    z-index: 1000;
+}
+
+.controlbtn:hover {
+    background-color: rgb(65, 65, 65);
+}
