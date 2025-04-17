@@ -180,6 +180,11 @@ function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
 }
 
+function round(num, places) {
+    let multiplier = 10**places
+    return Math.round((num + Number.EPSILON) * multiplier) / multiplier;
+}
+
 // Polling for gamepad input
 function pollGamepad() {
     const gamepads = navigator.getGamepads();
@@ -188,10 +193,10 @@ function pollGamepad() {
         const gamepad = gamepads[0];
 
         // Map gamepad axes to robot controls with clamping
-        axis_values[LR_idx] = clamp(gamepad.axes[0], -1, 1);  // Left/Right (LR)
-        axis_values[FB_idx] = clamp(-gamepad.axes[1], -1, 1); // Forward/Backward (FB) (invert Y-axis)
-        axis_values[PAN_idx] = clamp(gamepad.axes[2], -1, 1); // Pan
-        axis_values[TILT_idx] = clamp(-gamepad.axes[3], -1, 1); // Tilt (invert Y-axis)
+        axis_values[LR_idx] = round(clamp(gamepad.axes[0], -1, 1), 2) * -1;  // Left/Right (LR)
+        axis_values[FB_idx] = round(clamp(-gamepad.axes[1], -1, 1), 2); // Forward/Backward (FB) (invert Y-axis)
+        axis_values[PAN_idx] = round(clamp(gamepad.axes[2], -1, 1), 2); // Pan
+        axis_values[TILT_idx] = round(clamp(-gamepad.axes[5], -1, 1), 2); // Tilt (invert Y-axis)
     }
 
     requestAnimationFrame(pollGamepad); // Continue polling
