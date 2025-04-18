@@ -202,6 +202,13 @@ function pollGamepad() {
     requestAnimationFrame(pollGamepad); // Continue polling
 }
 
+function startOptiTrack() {
+    fetch('/startOptiTrack', {method: 'POST'})
+    .then(response => {response.json(); console.log(response)})
+    .then(data => {})
+    .catch(error => console.error("Error:", error));
+}
+
 window.addEventListener("gamepadconnected", (event) => {
     console.log("Gamepad connected:", event.gamepad);
 });

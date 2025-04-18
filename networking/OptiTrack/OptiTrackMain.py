@@ -20,17 +20,24 @@
 
 import sys
 import time
+import server
+
+sys.path.append('OptiTrack/')
+
 from NatNetClient import *
 import DataDescriptions
 import MoCapData
 
+sys.path.append('../../raspberry_pi')
+
+from main import setOtData
+
 # This is a callback function that gets connected to the NatNet client. It is called once per rigid body per frame
 def receive_rigid_body_frame( new_id, position, rotation ):
     x, y, z = position
-    print( "Received frame for rigid body", new_id )
     # Write to CSV
     if new_id == 428:
-        print(x, y, z)
+        setOtData(x, y, z, rotation)
         
 
 def my_parse_args(arg_list, args_dict):
@@ -53,10 +60,11 @@ def my_parse_args(arg_list, args_dict):
 def receive_new_frame(data_dict):
     pass
 
-if __name__ == "__main__":
+# start motion capture
+def start():
 
     optionsDict = {}
-    optionsDict["clientAddress"] = "192.168.1.166"
+    optionsDict["clientAddress"] = "192.168.1.232"
     optionsDict["serverAddress"] = "192.168.1.10"
     optionsDict["use_multicast"] = False
 
@@ -75,6 +83,7 @@ if __name__ == "__main__":
 
     # Start up the streaming client now that the callbacks are set up.
     # This will run perpetually, and operate on a separate thread.
+    streaming_client.set_print_level(0)
     is_running = streaming_client.run()
     if not is_running:
         print("ERROR: Could not start streaming client.")

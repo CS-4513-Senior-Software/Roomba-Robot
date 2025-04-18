@@ -1,15 +1,17 @@
 from flask import *
 import sys
 import os
+from OptiTrack import OptiTrackMain as ot
 
 # subprocess.run(["python", "../hardware/raspberry_pi/main.py"])  # Runs script.py as a separate process
 
 
 script_dir = os.path.dirname(os.path.abspath(__file__))  # Current script dir
-target_path = os.path.abspath(os.path.join(script_dir, "../hardware/raspberry_pi"))
-sys.path.append(target_path)
+raspberry_pi_path = os.path.abspath(os.path.join(script_dir, "../hardware/raspberry_pi"))
+sys.path.append(raspberry_pi_path)
 
 from main import digital_write, generate_frames
+
 
 app = Flask(__name__)
 
@@ -31,6 +33,12 @@ def writeRequest():
     digital_write(axis_values, easing=False)
     
     return jsonify({'message': 'Data received successfully', 'data': data})  # Send response
+
+@app.route('/startOptiTrack', methods=['POST'])
+def startOptiTrack():
+    ot.start()
+    
+    return jsonify({'message': 'Starting OptiTrack...'})
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=8080)
