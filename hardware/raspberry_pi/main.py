@@ -48,6 +48,56 @@ def setOtData(x, y, z, rot):
     otData["z"] = z
     otData["rot"] = rot
 
+
+def calculate_angle(x_start, z_start, x_end, z_end):
+    """Calculate the angle to the endpoint."""
+    return math.atan2(z_end - z_start, x_end - x_start)
+
+def rotate_to_angle(current_angle, target_angle):
+    """Calculate the shortest rotation needed to face the target angle."""
+    rotation = target_angle - current_angle
+    if rotation > math.pi:
+        rotation -= 2 * math.pi
+    elif rotation < -math.pi:
+        rotation += 2 * math.pi
+    return rotation
+
+def move_to_endpoint(x_end, z_end, tolerance=0.1):
+    """
+    Navigate the robot to the specified endpoint.
+    :param x_end: Target x-coordinate.
+    :param z_end: Target z-coordinate.
+    :param tolerance: Distance tolerance to consider the endpoint reached.
+    """
+    global otData
+
+    while True:
+        # Get the current position and orientation from OptiTrack data
+        x_start, z_start = otData["x"], otData["z"]
+        current_angle = otData["rot"]
+
+        # Calculate the distance to the endpoint
+        distance = math.sqrt((x_end - x_start) ** 2 + (z_end - z_start) ** 2)
+        if distance < tolerance:
+            print("Reached the endpoint.")
+            # Stop the robot
+            digital_write([0, 0, 0, 0])
+            break
+
+        # Calculate the target angle
+        target_angle = calculate_angle(x_start, z_start, x_end, z_end)
+
+        # Rotate to face the target angle
+        rotation = rotate_to_angle(current_angle, target_angle)
+        if abs(rotation) > 0.1:  # Rotate if not aligned
+            axis_values = [rotation, 0, 0, 0]  # Rotate in place
+        else:  # Move forward if aligned
+            axis_values = [0, 0.5, 0, 0]  # Move forward
+
+        # Send movement commands using existing motor control logic
+        digital_write(axis_values)
+
+
 def generate_frames():
     """Generator function to capture frames from Pi Camera and yield them as JPEGs."""
     while True:
