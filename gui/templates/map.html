@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roomba Robot GUI</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Leaflet CSS for the map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+    <style>
+        .circle-button {
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .camera-feed {
+            width: 850px;
+            height: 350px;
+            background-color: #f0f0f0;
+            margin: 10px auto;
+            position: relative; /* Allows the map to be positioned within this div */
+        }
+        .bottom-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px;
+        }
+        .joysticks {
+            display: flex;
+            justify-content: center;
+            margin: 20px;
+        }
+        .joystick {
+            margin: 0 20px;
+        }
+        .top-right {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .bottom-right {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+        }
+        .top-left {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+        
+        /* Map Container Style */
+        #map {
+            height: 100%; /* Fill the container */
+            width: 100%;
+            position: absolute; /* Position the map inside the camera-feed */
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">Roomba Robot GUI</h1>
+        <div class="camera-feed">
+            <!-- Map will be embedded inside this div -->
+            <div id="map"></div>
+        </div>
+        <div class="text-center">
+            <input type="text" class="form-control" placeholder="Enter option" style="width: 350px; margin: 10px auto;">
+            <button class="btn btn-primary">Select Option</button>
+        </div>
+        <div class="bottom-buttons">
+            <button class="btn btn-secondary circle-button">Button 1</button>
+            <button class="btn btn-secondary circle-button">Button 2</button>
+        </div>
+        <div class="joysticks">
+            <button class="btn btn-secondary circle-button joystick">Joystick 1</button>
+            <button class="btn btn-secondary circle-button joystick">Joystick 2</button>
+        </div>
+        <div class="top-right">
+            <button class="btn btn-secondary circle-button">Compass</button>
+        </div>
+        <div class="bottom-right">
+            <button class="btn btn-secondary">Battery</button>
+        </div>
+        <div class="top-left">
+            <button class="btn btn-secondary">Camera Toggle</button>
+        </div>
+
+        <!-- OptiTrack ID Form -->
+        <div class="form-container">
+            <h2>Enter OptiTrack ID</h2>
+            <form id="idForm">
+                <label for="userID">OptiTrack ID (3-digit number):</label>
+                <input type="text" id="userID" name="userID" maxlength="3" pattern="\d{1,3}" placeholder="e.g., 123" required>
+                <button type="submit" class="btn btn-success mt-3">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Leaflet JS for the map -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    
+    <script>
+        // Initialize the map and set default view (latitude, longitude, zoom level)
+        var map = L.map('map').setView([51.505, -0.09], 13); // Set initial position of the map
+
+        // Add OpenStreetMap tiles (base map)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Create a marker for the robot's current position
+        var robotMarker = L.marker([51.505, -0.09]).addTo(map); // This will be updated with OptiTrack data
+        robotMarker.bindPopup("Robot Position");
+
+        // Event listener for map click
+        map.on('click', function(e) {
+            var lat = e.latlng.lat;
+            var lng = e.latlng.lng;
+
+            // Send the target position to the robot (e.g., through WebSocket, API call, etc.)
+            alert("You clicked at latitude: " + lat + ", longitude: " + lng);
+
+            // You can use this target position to calculate movement (in your backend logic)
+            // For example: send lat/lng to robot's controller to navigate the robot to this point
+        });
+
+        // Function to simulate updating the robot's position (e.g., from OptiTrack system)
+        function updateRobotPosition(robot_x, robot_y) {
+            // Update the robot marker's position on the map
+            robotMarker.setLatLng([robot_x, robot_y]);
+            robotMarker.setPopupContent("Robot Position: " + robot_x + ", " + robot_y);
+        }
+
+        // Simulating a robot position update (you will replace this with real OptiTrack data)
+        setInterval(function() {
+            // Example OptiTrack data (Replace this with real coordinates from OptiTrack)
+            var robot_x = 51.505 + Math.random() * 0.01; // Simulating movement in latitude
+            var robot_y = -0.09 + Math.random() * 0.01; // Simulating movement in longitude
+
+            updateRobotPosition(robot_x, robot_y);
+        }, 2000); // Update every 2 seconds (simulating robot movement)
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
