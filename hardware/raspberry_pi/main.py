@@ -35,6 +35,19 @@ AXIS_PAN = 2
 AXIS_FB = 1
 AXIS_LR = 0
 
+otData = {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "rot": 0
+}
+
+def setOtData(x, y, z, rot):
+    otData["x"] = x
+    otData["y"] = y
+    otData["z"] = z
+    otData["rot"] = rot
+
 def generate_frames():
     """Generator function to capture frames from Pi Camera and yield them as JPEGs."""
     while True:
@@ -49,6 +62,8 @@ def digital_write(axis_values: list[int], easing = True, n_steps = 15):
     global prev_integers
     global prev_bool_byte
     global ser
+    
+    print(otData)
     try:
         if len(axis_values) != 4:
             raise DigitalWriteException("Length of axis_values array must be equal to 4.")
