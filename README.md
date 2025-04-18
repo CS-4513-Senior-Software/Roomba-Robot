@@ -23,7 +23,7 @@ Rhea Katari, Front-End Developer
 
 Picture:
 
-Bio:
+Bio: I am double majoring in Computer Science and Cyber Security and minoring in Mathematics. When I'm not in class, you'll usually find me listening to music, reading, or diving into geography and history.
 
 Riley Raasch, Project and Front-End Lead
 
