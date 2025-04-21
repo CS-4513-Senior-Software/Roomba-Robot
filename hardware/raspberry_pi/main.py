@@ -10,6 +10,7 @@ import typing
 from picamera2 import Picamera2
 import cv2
 import io
+import csv
 
 class DigitalWriteException(Exception):
     pass
@@ -35,6 +36,10 @@ AXIS_PAN = 2
 AXIS_FB = 1
 AXIS_LR = 0
 
+logfile = open("positions.csv", "w", newline="")  # "w" for write mode, or "a" for append
+csvwriter = csv.writer(logfile)
+csvwriter.writerow(["ID", "X", "Y", "Z"])  # Write headers once
+
 otData = {
     "x": 0,
     "y": 0,
@@ -47,6 +52,10 @@ def setOtData(x, y, z, rot):
     otData["y"] = y
     otData["z"] = z
     otData["rot"] = rot
+    
+    
+    csvwriter.writerow(["429", x, y, z])
+    logfile.flush()  # Optional: ensures immediate writing to disk
 
 
 def calculate_angle(x_start, z_start, x_end, z_end):
@@ -113,7 +122,6 @@ def digital_write(axis_values: list[int], easing = True, n_steps = 15):
     global prev_bool_byte
     global ser
     
-    print(otData)
     try:
         if len(axis_values) != 4:
             raise DigitalWriteException("Length of axis_values array must be equal to 4.")
