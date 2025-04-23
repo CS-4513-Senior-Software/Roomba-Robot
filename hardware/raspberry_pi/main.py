@@ -10,6 +10,7 @@ import typing
 from picamera2 import Picamera2
 import cv2
 import io
+import csv
 
 class DigitalWriteException(Exception):
     pass
@@ -160,7 +161,6 @@ def digital_write(axis_values: list[int], easing = True, n_steps = 15):
     global prev_bool_byte
     global ser
     
-    print(otData)
     try:
         if len(axis_values) != 4:
             raise DigitalWriteException("Length of axis_values array must be equal to 4.")

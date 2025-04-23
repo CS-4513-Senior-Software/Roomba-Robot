@@ -30,13 +30,12 @@ import MoCapData
 
 sys.path.append('../../raspberry_pi')
 
-from main import setOtData
+from main import setOtData, move_to_endpoint
 
 # This is a callback function that gets connected to the NatNet client. It is called once per rigid body per frame
 def receive_rigid_body_frame( new_id, position, rotation ):
     x, y, z = position
-    # Write to CSV
-    if new_id == 428:
+    if new_id == 429:
         setOtData(x, y, z, rotation)
         
 
@@ -93,7 +92,9 @@ def start():
             print("...")
         finally:
             print("exiting")
-            
+    
+    # move_to_endpoint(3, 3)
+         
     # Check connection status
     while True:
         time.sleep(1)
