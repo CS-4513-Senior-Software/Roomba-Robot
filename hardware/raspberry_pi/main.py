@@ -39,15 +39,62 @@ otData = {
     "x": 0,
     "y": 0,
     "z": 0,
-    "rot": 0
+    "roll": 0,
+    "pitch": 0,
+    "yaw": 0
 }
 
-def setOtData(x, y, z, rot):
+def setOtData(x: float, y: float, z: float, rot):
+    """
+    Will set the x, y, and z position data as floats.
+    Will convert the Quaterion rotation _rot_ to euler
+    angles: roll, pitch, and yaw, in degrees.
+    """
     otData["x"] = x
     otData["y"] = y
     otData["z"] = z
-    otData["rot"] = rot
+    otData["roll"], otData["pitch"], otData["yaw"] = quaternion_to_euler(rot)
 
+def quaternion_to_euler(quaternion):    
+    """
+    Convert a quaternion into Euler angles (roll, pitch, yaw) in degrees.
+    Roll is rotation around x-axis
+    Pitch is rotation around y-axis
+    Yaw is rotation around z-axis
+    """
+    qx, qy, qz, qw = quaternion
+    
+    # Normalize the quaternion
+    norm = math.sqrt(qx * qx + qy * qy + qz * qz + qw * qw)
+    qx /= norm
+    qy /= norm
+    qz /= norm
+    qw /= norm
+
+    # Roll (x-axis rotation)
+    sinr_cosp = 2 * (qw * qx + qy * qz)
+    cosr_cosp = 1 - 2 * (qx * qx + qy * qy)
+    roll_rad = math.atan2(sinr_cosp, cosr_cosp)
+
+    # Pitch (y-axis rotation)
+    sinp = 2 * (qw * qy - qz * qx)
+    if abs(sinp) >= 1:
+        # Use 90 degrees if out of range
+        pitch_rad = math.copysign(math.pi / 2, sinp)
+    else:
+        pitch_rad = math.asin(sinp)
+
+    # Yaw (z-axis rotation)
+    siny_cosp = 2 * (qw * qz + qx * qy)
+    cosy_cosp = 1 - 2 * (qy * qy + qz * qz)
+    yaw_rad = math.atan2(siny_cosp, cosy_cosp)
+
+    # Convert radians to degrees
+    roll = math.degrees(roll_rad)
+    pitch = math.degrees(pitch_rad)
+    yaw = math.degrees(yaw_rad)
+
+    return roll, pitch, yaw
 
 def calculate_angle(x_start, z_start, x_end, z_end):
     """Calculate the angle to the endpoint."""
@@ -176,12 +223,6 @@ def get_integers_bool(axis_values: list[int]):
     global speed_mode
     
     button_values = 0
-    # for i in range(12):
-    #     button_value = joystick.get_button(i)  # Returns 0 or 1
-    #     button_values = (button_values << 1) | button_value
-    #     #button_values.append(button_value)
-        
-    # print(f"axis values: {axis_values}, button values: {button_values}")
         
     # servos
     if(button_values & 1):
@@ -213,14 +254,6 @@ def get_integers_bool(axis_values: list[int]):
             tilt = 179
         if(tilt < 1):
             tilt = 1
-    
-    # if(abs(axis_values[AXIS_TILT]) > axis_dead):
-        # tilt = tilt - 0.8*axis_values[AXIS_TILT]
-        # if(tilt > 179):
-            # tilt = 179
-        # if(tilt < 1):
-            # tilt = 1
-            
         
         
     # Motors
