@@ -122,7 +122,7 @@ def move_to_endpoint(x_end, z_end, tolerance=0.1):
     while True:
         # Get the current position and orientation from OptiTrack data
         x_start, z_start = otData["x"], otData["z"]
-        current_angle = otData["rot"]
+        current_angle = otData["yaw"]
 
         # Calculate the distance to the endpoint
         distance = math.sqrt((x_end - x_start) ** 2 + (z_end - z_start) ** 2)
