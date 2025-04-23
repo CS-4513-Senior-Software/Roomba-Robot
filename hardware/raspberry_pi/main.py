@@ -101,14 +101,10 @@ def calculate_angle(x_start, z_start, x_end, z_end):
     """Calculate the angle to the endpoint."""
     return math.atan2(z_end - z_start, x_end - x_start)
 
-def rotate_to_angle(current_angle, target_angle):
-    """Calculate the shortest rotation needed to face the target angle."""
-    rotation = target_angle - current_angle
-    if rotation > math.pi:
-        rotation -= 2 * math.pi
-    elif rotation < -math.pi:
-        rotation += 2 * math.pi
-    return rotation
+def calculate_rotation(current_angle, target_angle):
+    """Calculate the shortest rotation direction needed to face the target angle."""
+    angles_to_rotate = target_angle - current_angle
+    return angles_to_rotate
 
 def move_to_endpoint(x_end, z_end, tolerance=0.1):
     """
@@ -136,12 +132,22 @@ def move_to_endpoint(x_end, z_end, tolerance=0.1):
         target_angle = calculate_angle(x_start, z_start, x_end, z_end)
 
         # Rotate to face the target angle
-        rotation = rotate_to_angle(current_angle, target_angle)
-        if abs(rotation) > 0.1:  # Rotate if not aligned
-            axis_values = [rotation, 0, 0, 0]  # Rotate in place
-        else:  # Move forward if aligned
-            axis_values = [0, 0.5, 0, 0]  # Move forward
-
+        angles_to_rotate = target_angle - current_angle
+        
+        while abs(angles_to_rotate) > tolerance: # rotate while not aligned
+            current_angle = otData["yaw"]
+            angles_to_rotate = target_angle - current_angle
+            
+            # Determine shortest direction to rotate
+            if angles_to_rotate > 0:
+                rotation_dir = 1
+            else:
+                rotation_dir = -1
+            
+            axis_values = [rotation_dir, 0, 0, 0] # rotate in place
+            digital_write(axis_values)
+        
+        axis_values = [0, 0.5, 0, 0] # move forward once aligned
         # Send movement commands using existing motor control logic
         digital_write(axis_values)
 
