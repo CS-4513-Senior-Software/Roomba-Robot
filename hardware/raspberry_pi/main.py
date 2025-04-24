@@ -11,6 +11,7 @@ from picamera2 import Picamera2
 import cv2
 import io
 import csv
+import threading
 
 class DigitalWriteException(Exception):
     pass
@@ -51,10 +52,18 @@ def setOtData(x: float, y: float, z: float, rot):
     Will convert the Quaterion rotation _rot_ to euler
     angles: roll, pitch, and yaw, in degrees.
     """
+    print("setOtData")
     otData["x"] = x
-    otData["y"] = y
+    otData["y"] = -y
     otData["z"] = z
     otData["roll"], otData["pitch"], otData["yaw"] = quaternion_to_euler(rot)
+    
+    csv_file = open('otData.csv', mode='w', newline='')
+    csv_writer = csv.writer(csv_file)
+    row = []
+    for item in otData:
+        row.append(otData[item])
+    csv_writer.writerow(row)
 
 def quaternion_to_euler(quaternion):    
     """
@@ -97,16 +106,25 @@ def quaternion_to_euler(quaternion):
 
     return roll, pitch, yaw
 
-def calculate_angle(x_start, z_start, x_end, z_end):
+def calculate_angle(x_start, y_start, x_end, y_end):
     """Calculate the angle to the endpoint."""
-    return math.atan2(z_end - z_start, x_end - x_start)
+    
+    print("x_start: " + str(x_start))
+    print("x_end: " + str(x_end))
+    print("y_start: " + str(y_start))
+    print("y_end: " + str(y_end))
+    
+    angle_rad = math.atan2(y_end - y_start, x_end - x_start)
+    angle_deg = math.degrees(angle_rad) + 180
+    print("angle_deg " + str(angle_deg))
+    return angle_deg
 
 def calculate_rotation(current_angle, target_angle):
     """Calculate the shortest rotation direction needed to face the target angle."""
     angles_to_rotate = target_angle - current_angle
     return angles_to_rotate
 
-def move_to_endpoint(x_end, z_end, tolerance=0.1):
+def move_to_endpoint(x_end, y_end, tolerance=0.1):
     """
     Navigate the robot to the specified endpoint.
     :param x_end: Target x-coordinate.
@@ -115,13 +133,30 @@ def move_to_endpoint(x_end, z_end, tolerance=0.1):
     """
     global otData
 
+
+    movingForward = False
     while True:
+        print("hit")
+        
         # Get the current position and orientation from OptiTrack data
-        x_start, z_start = otData["x"], otData["z"]
+        with open('otData.csv', mode='r') as file:
+            reader = csv.reader(file)
+
+            for row in reader:
+                otData["x"] = float(row[0])
+                otData["y"] = float(row[1])
+                otData["z"] = float(row[2])
+                otData["roll"] = float(row[3])
+                otData["pitch"] = float(row[4])
+                otData["yaw"] = (float(row[5]) + float(180))
+        x_start, y_start = otData["x"], otData["y"]
         current_angle = otData["yaw"]
+        
+        # csv_writer.writerow([current_angle, otData["qx"], otData["qy"], otData["qz"], otData["qw"], time.time()])
+        
 
         # Calculate the distance to the endpoint
-        distance = math.sqrt((x_end - x_start) ** 2 + (z_end - z_start) ** 2)
+        distance = math.sqrt((x_end - x_start) ** 2 + (y_end - y_start) ** 2)
         if distance < tolerance:
             print("Reached the endpoint.")
             # Stop the robot
@@ -129,27 +164,59 @@ def move_to_endpoint(x_end, z_end, tolerance=0.1):
             break
 
         # Calculate the target angle
-        target_angle = calculate_angle(x_start, z_start, x_end, z_end)
+        target_angle = calculate_angle(x_start, y_start, x_end, y_end)
+        print("target " + str(target_angle))
+        print("current " + str(current_angle))
 
         # Rotate to face the target angle
         angles_to_rotate = target_angle - current_angle
         
-        while abs(angles_to_rotate) > tolerance: # rotate while not aligned
-            current_angle = otData["yaw"]
-            angles_to_rotate = target_angle - current_angle
-            
-            # Determine shortest direction to rotate
-            if angles_to_rotate > 0:
-                rotation_dir = 1
-            else:
-                rotation_dir = -1
-            
-            axis_values = [rotation_dir, 0, 0, 0] # rotate in place
-            digital_write(axis_values)
+        old_dir = 0
+        if abs(angles_to_rotate) > 45:
+            while abs(angles_to_rotate) > 20: # rotate while not aligned
+                # Get the current position and orientation from OptiTrack data
+                        # Get the current position and orientation from OptiTrack data
+                with open('otData.csv', mode='r') as file:
+                    reader = csv.reader(file)
+
+                    for row in reader:
+                        if len(row) >= 6:
+                            otData["x"] = float(row[0])
+                            otData["y"] = float(row[1])
+                            otData["z"] = float(row[2])
+                            otData["roll"] = float(row[3])
+                            otData["pitch"] = float(row[4])
+                            otData["yaw"] = (float(row[5]) + float(180))
+                current_angle = otData["yaw"]
+                target_angle = calculate_angle(x_start, y_start, x_end, y_end)
+                movingForward = False
+                print("test")
+                current_angle = otData["yaw"]
+                angles_to_rotate = target_angle - current_angle
+                print("angles to rotate: " + str(angles_to_rotate))
+                print("target " + str(target_angle))
+                print("current " + str(current_angle))
+                print("x " + str(otData["x"]))
+                print("y " + str(otData["y"]))
+                print("z " + str(otData["z"]))
+                
+                # Determine shortest direction to rotate
+                if angles_to_rotate > 0:
+                    rotation_dir = -0.1
+                else:
+                    rotation_dir = 0.1
+                
+                axis_values = [rotation_dir, 0, 0, 0] # rotate in place
+                digital_write(axis_values)
+                # if old_dir != rotation_dir:
+                #     # print("change direction")
+                #     old_dir = rotation_dir
         
-        axis_values = [0, 0.5, 0, 0] # move forward once aligned
-        # Send movement commands using existing motor control logic
-        digital_write(axis_values)
+        if not movingForward:
+            movingForward = True
+            axis_values = [0, 0.5, 0, 0] # move forward once aligned
+            # Send movement commands using existing motor control logic
+            digital_write(axis_values)
 
 
 def generate_frames():
@@ -162,7 +229,7 @@ def generate_frames():
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
-def digital_write(axis_values: list[int], easing = True, n_steps = 15):
+def digital_write(axis_values: list[int], easing = False, n_steps = 15):
     global prev_integers
     global prev_bool_byte
     global ser

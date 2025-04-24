@@ -21,6 +21,8 @@
 import sys
 import time
 import server
+import os
+from contextlib import redirect_stdout
 
 sys.path.append('OptiTrack/')
 
@@ -83,7 +85,9 @@ def start():
     # Start up the streaming client now that the callbacks are set up.
     # This will run perpetually, and operate on a separate thread.
     streaming_client.set_print_level(0)
+    # sys.stdout = open(os.devnull, 'w')
     is_running = streaming_client.run()
+    # sys.stdout = sys.__stdout__
     if not is_running:
         print("ERROR: Could not start streaming client.")
         try:
@@ -93,7 +97,7 @@ def start():
         finally:
             print("exiting")
     
-    # move_to_endpoint(3, 3)
+    move_to_endpoint(3, 3)
          
     # Check connection status
     while True:
