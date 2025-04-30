@@ -115,14 +115,18 @@ def calculate_angle(x_start, y_start, x_end, y_end):
     print("y_end: " + str(y_end))
     
     angle_rad = math.atan2(y_end - y_start, x_end - x_start)
-    angle_deg = math.degrees(angle_rad) + 180
+    # angle_deg = math.degrees(angle_rad) + 180
+    angle_deg = math.degrees(angle_rad)
+    angle_deg = (angle_deg + 180) % 360 - 180  # Normalize to [-180, 180]
     print("angle_deg " + str(angle_deg))
     return angle_deg
 
 def calculate_rotation(current_angle, target_angle):
-    """Calculate the shortest rotation direction needed to face the target angle."""
-    angles_to_rotate = target_angle - current_angle
-    return angles_to_rotate
+    # """Calculate the shortest rotation direction needed to face the target angle."""
+    # angles_to_rotate = target_angle - current_angle
+    # return angles_to_rotate
+    """Return the shortest signed angle difference in degrees."""
+    return ((target_angle - current_angle + 180) % 360) - 180
 
 def move_to_endpoint(x_end, y_end, tolerance=0.1):
     """
@@ -148,7 +152,9 @@ def move_to_endpoint(x_end, y_end, tolerance=0.1):
                 otData["z"] = float(row[2])
                 otData["roll"] = float(row[3])
                 otData["pitch"] = float(row[4])
-                otData["yaw"] = (float(row[5]) + float(180))
+                # otData["yaw"] = (float(row[5]) + float(180))
+                otData["yaw"] = ((float(row[5]) + 180) % 360) - 180
+
         x_start, y_start = otData["x"], otData["y"]
         current_angle = otData["yaw"]
         
@@ -173,9 +179,9 @@ def move_to_endpoint(x_end, y_end, tolerance=0.1):
         
         old_dir = 0
         if abs(angles_to_rotate) > 45:
-            while abs(angles_to_rotate) > 20: # rotate while not aligned
+            last_angle_diff = None
+            while abs(angles_to_rotate) > 10: # rotate while not aligned
                 # Get the current position and orientation from OptiTrack data
-                        # Get the current position and orientation from OptiTrack data
                 with open('otData.csv', mode='r') as file:
                     reader = csv.reader(file)
 
@@ -186,37 +192,51 @@ def move_to_endpoint(x_end, y_end, tolerance=0.1):
                             otData["z"] = float(row[2])
                             otData["roll"] = float(row[3])
                             otData["pitch"] = float(row[4])
-                            otData["yaw"] = (float(row[5]) + float(180))
+                            # otData["yaw"] = (float(row[5]) + float(180))
+                            otData["yaw"] = ((float(row[5]) + 180) % 360) - 180
+                # current_angle = otData["yaw"]
+                # target_angle = calculate_angle(x_start, y_start, x_end, y_end)
+                x_start, y_start = otData["x"], otData["y"]
                 current_angle = otData["yaw"]
                 target_angle = calculate_angle(x_start, y_start, x_end, y_end)
                 movingForward = False
                 print("test")
                 current_angle = otData["yaw"]
-                angles_to_rotate = target_angle - current_angle
+                # angles_to_rotate = target_angle - current_angle
+                angles_to_rotate = calculate_rotation(current_angle, target_angle)
                 print("angles to rotate: " + str(angles_to_rotate))
                 print("target " + str(target_angle))
                 print("current " + str(current_angle))
                 print("x " + str(otData["x"]))
                 print("y " + str(otData["y"]))
                 print("z " + str(otData["z"]))
+
+                # added check for oscillation
+                if last_angle_diff is not None and abs(angles_to_rotate - last_angle_diff) < 0.5:
+                    print("Detected angle oscillation, exiting rotation loop.")
+                    break
+                last_angle_diff = angles_to_rotate
                 
                 # Determine shortest direction to rotate
-                if angles_to_rotate > 0:
-                    rotation_dir = -0.1
-                else:
-                    rotation_dir = 0.1
+                # if angles_to_rotate > 0:
+                #    rotation_dir = -0.1
+                # else:
+                #    rotation_dir = 0.1
                 
+                # proportional control for rotation speed
+                rotation_dir = clamp(-0.01 * angles_to_rotate, -0.5, 0.5)
+
                 axis_values = [rotation_dir, 0, 0, 0] # rotate in place
                 digital_write(axis_values)
                 # if old_dir != rotation_dir:
                 #     # print("change direction")
                 #     old_dir = rotation_dir
         
-        if not movingForward:
-            movingForward = True
-            axis_values = [0, 0.5, 0, 0] # move forward once aligned
+        # if not movingForward:
+            # movingForward = True
+        axis_values = [0, 0.5, 0, 0] # move forward once aligned
             # Send movement commands using existing motor control logic
-            digital_write(axis_values)
+        digital_write(axis_values)
 
 
 def generate_frames():
