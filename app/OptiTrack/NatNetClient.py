@@ -20,8 +20,8 @@ import struct
 from threading import Thread
 import copy
 import time
-import DataDescriptions
-import MoCapData
+import app.OptiTrack.DataDescriptions
+import app.OptiTrack.MoCapData
 
 def trace( *args ):
     # uncomment the one you want to use

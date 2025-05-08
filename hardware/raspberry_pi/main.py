@@ -7,7 +7,10 @@ import serial
 from serial import Serial
 import pygame
 import typing
-from picamera2 import Picamera2
+try:
+    from picamera2 import Picamera2
+except ImportError:
+    print("picamera2 not available on this system")
 import cv2
 import io
 import csv
@@ -16,13 +19,16 @@ import threading
 class DigitalWriteException(Exception):
     pass
 
-cam = Picamera2()
-cam.preview_configuration.main.size = (640, 480)
-cam.preview_configuration.main.format = "RGB888"
-cam.configure("video")
+try:
+    cam = Picamera2()
+    cam.preview_configuration.main.size = (640, 480)
+    cam.preview_configuration.main.format = "RGB888"
+    cam.configure("video")
 
-cam.start()
-time.sleep(2) # allow camera to conduct auto exposure adjustments
+    cam.start()
+    time.sleep(2) # allow camera to conduct auto exposure adjustments
+except:
+    pass
 
 prev_integers = [450, 450, 0, 0]
 prev_bool_byte = 0
@@ -393,7 +399,7 @@ try:
 
 except serial.SerialException:
     print("ERROR: Unable to connect to serial port. Check USB connection.")
-    exit()
+    # exit()
 
 # Ensure values stay within a specified range
 def clamp(value, min_value, max_value):
