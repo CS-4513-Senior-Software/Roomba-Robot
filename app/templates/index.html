@@ -126,6 +126,181 @@
             sendCommand();
         });
     </script> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roomba Robot GUI</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        .circle-button {
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .camera-feed {
+            width: 850px;
+            height: 350px;
+            background-color: #f0f0f0;
+            margin: 10px auto;
+            position: relative;
+        }
+        #graphCanvas {
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+        }
+        .bottom-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px;
+        }
+        .joysticks {
+            display: flex;
+            justify-content: center;
+            margin: 20px;
+        }
+        .joystick {
+            margin: 0 20px;
+        }
+        .top-right {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .bottom-right {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+        }
+        .top-left {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">Roomba Robot GUI</h1>
+        <div class="camera-feed">
+            <!-- Cartesian graph will be embedded inside this canvas -->
+            <canvas id="graphCanvas" width="850" height="350"></canvas>
+        </div>
+        <div class="text-center">
+            <input type="text" class="form-control" placeholder="Enter option" style="width: 350px; margin: 10px auto;">
+            <button class="btn btn-primary">Select Option</button>
+        </div>
+        <div class="bottom-buttons">
+            <button class="btn btn-secondary circle-button">Button 1</button>
+            <button class="btn btn-secondary circle-button">Button 2</button>
+        </div>
+        <div class="joysticks">
+            <button class="btn btn-secondary circle-button joystick">Joystick 1</button>
+            <button class="btn btn-secondary circle-button joystick">Joystick 2</button>
+        </div>
+        <div class="top-right">
+            <button class="btn btn-secondary circle-button">Compass</button>
+        </div>
+        <div class="bottom-right">
+            <button class="btn btn-secondary">Battery</button>
+        </div>
+        <div class="top-left">
+            <button class="btn btn-secondary">Camera Toggle</button>
+        </div>
+
+        <!-- Updated OptiTrack ID Form -->
+        <div class="form-container text-center" style="margin-top: 50px;"> <!-- Increased margin-top -->
+            <form id="idForm" style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <h2 style="margin: 0; font-size: 18px;">Enter OptiTrack ID:</h2>
+                <input type="text" id="userID" name="userID" maxlength="3" pattern="\d{1,3}" 
+                       placeholder="e.g., 123" required 
+                       class="form-control" style="width: 200px;">
+                <button type="submit" class="btn btn-success">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Draw Cartesian axes with labels
+        function drawAxes() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 1;
+
+            // Draw x-axis
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height / 2);
+            ctx.lineTo(canvas.width, canvas.height / 2);
+            ctx.stroke();
+
+            // Draw y-axis
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+
+            // Draw grid lines
+            ctx.strokeStyle = '#cccccc';
+            for (let x = 0; x <= canvas.width; x += canvas.width / 12) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y <= canvas.height; y += canvas.height / 12) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Add axis labels
+            ctx.fillStyle = '#000000';
+            ctx.font = '16px Arial';
+
+            // Label for x-axis
+            ctx.fillText('x', canvas.width - 20, canvas.height / 2 - 10);
+
+            // Label for z-axis
+            ctx.fillText('z', canvas.width / 2 + 10, 20);
+        }
+
+        // Convert canvas coordinates to Cartesian coordinates
+        function canvasToCartesian(x, y) {
+            const cartesianX = (x - canvas.width / 2) / (canvas.width / 12);
+            const cartesianY = -(y - canvas.height / 2) / (canvas.height / 12);
+            return { x: cartesianX, y: cartesianY };
+        }
+
+        // Handle canvas click
+        canvas.addEventListener('click', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            const cartesianCoords = canvasToCartesian(x, y);
+            alert(`You clicked at Cartesian coordinates: (${cartesianCoords.x.toFixed(2)}, ${cartesianCoords.y.toFixed(2)})`);
+        });
+
+        // Initial draw
+        drawAxes();
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
 </body>
 
 </html>
