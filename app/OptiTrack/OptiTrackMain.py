@@ -20,19 +20,14 @@
 
 import sys
 import time
-import server
 import os
 from contextlib import redirect_stdout
 
-sys.path.append('OptiTrack/')
+from app.OptiTrack.NatNetClient import *
+import app.OptiTrack.DataDescriptions
+import app.OptiTrack.MoCapData
 
-from NatNetClient import *
-import DataDescriptions
-import MoCapData
-
-sys.path.append('../../raspberry_pi')
-
-from main import setOtData, move_to_endpoint
+from hardware.raspberry_pi.main import setOtData, move_to_endpoint
 
 # This is a callback function that gets connected to the NatNet client. It is called once per rigid body per frame
 def receive_rigid_body_frame( new_id, position, rotation ):

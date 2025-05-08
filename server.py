@@ -1,16 +1,16 @@
 from flask import *
 import sys
 import os
-from OptiTrack import OptiTrackMain as ot
+from app.OptiTrack import OptiTrackMain as ot
 
 # subprocess.run(["python", "../hardware/raspberry_pi/main.py"])  # Runs script.py as a separate process
 
 
-script_dir = os.path.dirname(os.path.abspath(__file__))  # Current script dir
-raspberry_pi_path = os.path.abspath(os.path.join(script_dir, "../hardware/raspberry_pi"))
-sys.path.append(raspberry_pi_path)
+# script_dir = os.path.dirname(os.path.abspath(__file__))  # Current script dir
+# raspberry_pi_path = os.path.abspath(os.path.join(script_dir, "../hardware/raspberry_pi"))
+# sys.path.append(raspberry_pi_path)
 
-from main import digital_write, generate_frames
+from hardware.raspberry_pi.main import digital_write, generate_frames
 
 
 app = Flask(__name__)
