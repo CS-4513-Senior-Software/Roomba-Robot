@@ -6,7 +6,7 @@ let FB_idx = 1;
 let PAN_idx = 2;
 let TILT_idx = 3;
 
-let activeInput = "none"; // Tracks the active input method i.e., gamepad, joystick, or keyboard
+// let activeInput = "none"; // Tracks the active input method i.e., gamepad, joystick, or keyboard
 
 function sendWriteRequest(msg) {
     fetch('/writeRequest', {
@@ -26,7 +26,6 @@ function sendWriteRequest(msg) {
 
 // runs every 20 ms
 function update() {
-
     // ensure axis_value LR and FB elements do not go outside the range [-1, 1]
     for (let i = 0; i < axis_values.length; i++) {
         if (axis_values[i] > 1) {
@@ -102,8 +101,6 @@ handleJoystick(joystickRight, "right");
 
 // keyboard controls
 document.addEventListener("keydown", function(e) {
-    activeInput = "keyboard";
-
     if (e.repeat) return;
     
     switch (e.key) {
@@ -188,15 +185,14 @@ function round(num, places) {
 // Polling for gamepad input
 function pollGamepad() {
     const gamepads = navigator.getGamepads();
-    activeInput = "gamepad";
     if (gamepads[0]) { // Use the first connected gamepad
         const gamepad = gamepads[0];
 
-        // Map gamepad axes to robot controls with clamping
-        axis_values[LR_idx] = round(clamp(gamepad.axes[0], -1, 1), 2) * -1;  // Left/Right (LR)
-        axis_values[FB_idx] = round(clamp(-gamepad.axes[1], -1, 1), 2); // Forward/Backward (FB) (invert Y-axis)
-        axis_values[PAN_idx] = round(clamp(gamepad.axes[2], -1, 1), 2); // Pan
-        axis_values[TILT_idx] = round(clamp(-gamepad.axes[5], -1, 1), 2); // Tilt (invert Y-axis)
+        // Map gamepad axes to robot controls with clamping and dead zone
+        axis_values[LR_idx] = Math.abs(gamepad.axes[0]) > 0.1 ? round(clamp(gamepad.axes[0], -1, 1), 2) * -1 : 0;  // Left/Right (LR)
+        axis_values[FB_idx] = Math.abs(gamepad.axes[1]) > 0.1 ? round(clamp(-gamepad.axes[1], -1, 1), 2) : 0; // Forward/Backward (FB) (invert Y-axis)
+        axis_values[PAN_idx] = Math.abs(gamepad.axes[2]) > 0.1 ? round(clamp(gamepad.axes[2], -1, 1), 2) : 0; // Pan
+        axis_values[TILT_idx] = Math.abs(gamepad.axes[5]) > 0.1 ? round(clamp(-gamepad.axes[5], -1, 1), 2) : 0; // Tilt (invert Y-axis)
     }
 
     requestAnimationFrame(pollGamepad); // Continue polling
