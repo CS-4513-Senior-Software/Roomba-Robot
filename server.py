@@ -13,7 +13,7 @@ from app.OptiTrack import OptiTrackMain as ot
 from hardware.raspberry_pi.main import digital_write, generate_frames
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='app/static', template_folder='app/templates')
 
 @app.route("/")
 def home():

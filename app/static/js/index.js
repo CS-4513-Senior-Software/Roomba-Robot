@@ -6,6 +6,73 @@ let FB_idx = 1;
 let PAN_idx = 2;
 let TILT_idx = 3;
 
+const canvas = document.getElementById('graphCanvas');
+const ctx = canvas.getContext('2d');
+
+// Draw Cartesian axes with labels
+function drawAxes() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1;
+
+    // Draw x-axis
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height / 2);
+    ctx.lineTo(canvas.width, canvas.height / 2);
+    ctx.stroke();
+
+    // Draw y-axis
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2, 0);
+    ctx.lineTo(canvas.width / 2, canvas.height);
+    ctx.stroke();
+
+    // Draw grid lines
+    ctx.strokeStyle = '#cccccc';
+    for (let x = 0; x <= canvas.width; x += canvas.width / 12) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+    }
+    for (let y = 0; y <= canvas.height; y += canvas.height / 12) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+    }
+
+    // Add axis labels
+    ctx.fillStyle = '#000000';
+    ctx.font = '16px Arial';
+
+    // Label for x-axis
+    ctx.fillText('x', canvas.width - 20, canvas.height / 2 - 10);
+
+    // Label for z-axis
+    ctx.fillText('z', canvas.width / 2 + 10, 20);
+}
+
+// Convert canvas coordinates to Cartesian coordinates
+function canvasToCartesian(x, y) {
+    const cartesianX = (x - canvas.width / 2) / (canvas.width / 12);
+    const cartesianY = -(y - canvas.height / 2) / (canvas.height / 12);
+    return { x: cartesianX, y: cartesianY };
+}
+
+// Handle canvas click
+canvas.addEventListener('click', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    const cartesianCoords = canvasToCartesian(x, y);
+    alert(`You clicked at Cartesian coordinates: (${cartesianCoords.x.toFixed(2)}, ${cartesianCoords.y.toFixed(2)})`);
+});
+
+// Initial draw
+drawAxes();
+
 // let activeInput = "none"; // Tracks the active input method i.e., gamepad, joystick, or keyboard
 
 function sendWriteRequest(msg) {
