@@ -7,20 +7,28 @@ import serial
 from serial import Serial
 import pygame
 import typing
-from picamera2 import Picamera2
+try:
+    from picamera2 import Picamera2
+except ImportError:
+    print("picamera2 not available on this system")
 import cv2
 import io
+import csv
+import threading
 
 class DigitalWriteException(Exception):
     pass
 
-cam = Picamera2()
-cam.preview_configuration.main.size = (640, 480)
-cam.preview_configuration.main.format = "RGB888"
-cam.configure("video")
+try:
+    cam = Picamera2()
+    cam.preview_configuration.main.size = (640, 480)
+    cam.preview_configuration.main.format = "RGB888"
+    cam.configure("video")
 
-cam.start()
-time.sleep(2) # allow camera to conduct auto exposure adjustments
+    cam.start()
+    time.sleep(2) # allow camera to conduct auto exposure adjustments
+except:
+    pass
 
 prev_integers = [450, 450, 0, 0]
 prev_bool_byte = 0
@@ -35,6 +43,208 @@ AXIS_PAN = 2
 AXIS_FB = 1
 AXIS_LR = 0
 
+otData = {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "roll": 0,
+    "pitch": 0,
+    "yaw": 0
+}
+
+def setOtData(x: float, y: float, z: float, rot):
+    """
+    Will set the x, y, and z position data as floats.
+    Will convert the Quaterion rotation _rot_ to euler
+    angles: roll, pitch, and yaw, in degrees.
+    """
+    print("setOtData")
+    otData["x"] = x
+    otData["y"] = -y
+    otData["z"] = z
+    otData["roll"], otData["pitch"], otData["yaw"] = quaternion_to_euler(rot)
+    
+    csv_file = open('otData.csv', mode='w', newline='')
+    csv_writer = csv.writer(csv_file)
+    row = []
+    for item in otData:
+        row.append(otData[item])
+    csv_writer.writerow(row)
+
+def quaternion_to_euler(quaternion):    
+    """
+    Convert a quaternion into Euler angles (roll, pitch, yaw) in degrees.
+    Roll is rotation around x-axis
+    Pitch is rotation around y-axis
+    Yaw is rotation around z-axis
+    """
+    qx, qy, qz, qw = quaternion
+    
+    # Normalize the quaternion
+    norm = math.sqrt(qx * qx + qy * qy + qz * qz + qw * qw)
+    qx /= norm
+    qy /= norm
+    qz /= norm
+    qw /= norm
+
+    # Roll (x-axis rotation)
+    sinr_cosp = 2 * (qw * qx + qy * qz)
+    cosr_cosp = 1 - 2 * (qx * qx + qy * qy)
+    roll_rad = math.atan2(sinr_cosp, cosr_cosp)
+
+    # Pitch (y-axis rotation)
+    sinp = 2 * (qw * qy - qz * qx)
+    if abs(sinp) >= 1:
+        # Use 90 degrees if out of range
+        pitch_rad = math.copysign(math.pi / 2, sinp)
+    else:
+        pitch_rad = math.asin(sinp)
+
+    # Yaw (z-axis rotation)
+    siny_cosp = 2 * (qw * qz + qx * qy)
+    cosy_cosp = 1 - 2 * (qy * qy + qz * qz)
+    yaw_rad = math.atan2(siny_cosp, cosy_cosp)
+
+    # Convert radians to degrees
+    roll = math.degrees(roll_rad)
+    pitch = math.degrees(pitch_rad)
+    yaw = math.degrees(yaw_rad)
+
+    return roll, pitch, yaw
+
+def calculate_angle(x_start, y_start, x_end, y_end):
+    """Calculate the angle to the endpoint."""
+    
+    print("x_start: " + str(x_start))
+    print("x_end: " + str(x_end))
+    print("y_start: " + str(y_start))
+    print("y_end: " + str(y_end))
+    
+    angle_rad = math.atan2(y_end - y_start, x_end - x_start)
+    # angle_deg = math.degrees(angle_rad) + 180
+    angle_deg = math.degrees(angle_rad)
+    angle_deg = (angle_deg + 180) % 360 - 180  # Normalize to [-180, 180]
+    print("angle_deg " + str(angle_deg))
+    return angle_deg
+
+def calculate_rotation(current_angle, target_angle):
+    # """Calculate the shortest rotation direction needed to face the target angle."""
+    # angles_to_rotate = target_angle - current_angle
+    # return angles_to_rotate
+    """Return the shortest signed angle difference in degrees."""
+    return ((target_angle - current_angle + 180) % 360) - 180
+
+def move_to_endpoint(x_end, y_end, tolerance=0.1):
+    """
+    Navigate the robot to the specified endpoint.
+    :param x_end: Target x-coordinate.
+    :param z_end: Target z-coordinate.
+    :param tolerance: Distance tolerance to consider the endpoint reached.
+    """
+    global otData
+
+
+    movingForward = False
+    while True:
+        print("hit")
+        
+        # Get the current position and orientation from OptiTrack data
+        with open('otData.csv', mode='r') as file:
+            reader = csv.reader(file)
+
+            for row in reader:
+                otData["x"] = float(row[0])
+                otData["y"] = float(row[1])
+                otData["z"] = float(row[2])
+                otData["roll"] = float(row[3])
+                otData["pitch"] = float(row[4])
+                # otData["yaw"] = (float(row[5]) + float(180))
+                otData["yaw"] = ((float(row[5]) + 180) % 360) - 180
+
+        x_start, y_start = otData["x"], otData["y"]
+        current_angle = otData["yaw"]
+        
+        # csv_writer.writerow([current_angle, otData["qx"], otData["qy"], otData["qz"], otData["qw"], time.time()])
+        
+
+        # Calculate the distance to the endpoint
+        distance = math.sqrt((x_end - x_start) ** 2 + (y_end - y_start) ** 2)
+        if distance < tolerance:
+            print("Reached the endpoint.")
+            # Stop the robot
+            digital_write([0, 0, 0, 0])
+            break
+
+        # Calculate the target angle
+        target_angle = calculate_angle(x_start, y_start, x_end, y_end)
+        print("target " + str(target_angle))
+        print("current " + str(current_angle))
+
+        # Rotate to face the target angle
+        angles_to_rotate = target_angle - current_angle
+        
+        old_dir = 0
+        if abs(angles_to_rotate) > 45:
+            last_angle_diff = None
+            while abs(angles_to_rotate) > 10: # rotate while not aligned
+                # Get the current position and orientation from OptiTrack data
+                with open('otData.csv', mode='r') as file:
+                    reader = csv.reader(file)
+
+                    for row in reader:
+                        if len(row) >= 6:
+                            otData["x"] = float(row[0])
+                            otData["y"] = float(row[1])
+                            otData["z"] = float(row[2])
+                            otData["roll"] = float(row[3])
+                            otData["pitch"] = float(row[4])
+                            # otData["yaw"] = (float(row[5]) + float(180))
+                            otData["yaw"] = ((float(row[5]) + 180) % 360) - 180
+                # current_angle = otData["yaw"]
+                # target_angle = calculate_angle(x_start, y_start, x_end, y_end)
+                x_start, y_start = otData["x"], otData["y"]
+                current_angle = otData["yaw"]
+                target_angle = calculate_angle(x_start, y_start, x_end, y_end)
+                movingForward = False
+                print("test")
+                current_angle = otData["yaw"]
+                # angles_to_rotate = target_angle - current_angle
+                angles_to_rotate = calculate_rotation(current_angle, target_angle)
+                print("angles to rotate: " + str(angles_to_rotate))
+                print("target " + str(target_angle))
+                print("current " + str(current_angle))
+                print("x " + str(otData["x"]))
+                print("y " + str(otData["y"]))
+                print("z " + str(otData["z"]))
+
+                # added check for oscillation
+                if last_angle_diff is not None and abs(angles_to_rotate - last_angle_diff) < 0.5:
+                    print("Detected angle oscillation, exiting rotation loop.")
+                    break
+                last_angle_diff = angles_to_rotate
+                
+                # Determine shortest direction to rotate
+                # if angles_to_rotate > 0:
+                #    rotation_dir = -0.1
+                # else:
+                #    rotation_dir = 0.1
+                
+                # proportional control for rotation speed
+                rotation_dir = clamp(-0.01 * angles_to_rotate, -0.5, 0.5)
+
+                axis_values = [rotation_dir, 0, 0, 0] # rotate in place
+                digital_write(axis_values)
+                # if old_dir != rotation_dir:
+                #     # print("change direction")
+                #     old_dir = rotation_dir
+        
+        # if not movingForward:
+            # movingForward = True
+        axis_values = [0, 0.5, 0, 0] # move forward once aligned
+            # Send movement commands using existing motor control logic
+        digital_write(axis_values)
+
+
 def generate_frames():
     """Generator function to capture frames from Pi Camera and yield them as JPEGs."""
     while True:
@@ -45,10 +255,11 @@ def generate_frames():
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
-def digital_write(axis_values: list[int], easing = True, n_steps = 15):
+def digital_write(axis_values: list[int], easing = False, n_steps = 15):
     global prev_integers
     global prev_bool_byte
     global ser
+    
     try:
         if len(axis_values) != 4:
             raise DigitalWriteException("Length of axis_values array must be equal to 4.")
@@ -111,12 +322,6 @@ def get_integers_bool(axis_values: list[int]):
     global speed_mode
     
     button_values = 0
-    # for i in range(12):
-    #     button_value = joystick.get_button(i)  # Returns 0 or 1
-    #     button_values = (button_values << 1) | button_value
-    #     #button_values.append(button_value)
-        
-    # print(f"axis values: {axis_values}, button values: {button_values}")
         
     # servos
     if(button_values & 1):
@@ -148,14 +353,6 @@ def get_integers_bool(axis_values: list[int]):
             tilt = 179
         if(tilt < 1):
             tilt = 1
-    
-    # if(abs(axis_values[AXIS_TILT]) > axis_dead):
-        # tilt = tilt - 0.8*axis_values[AXIS_TILT]
-        # if(tilt > 179):
-            # tilt = 179
-        # if(tilt < 1):
-            # tilt = 1
-            
         
         
     # Motors
@@ -202,7 +399,7 @@ try:
 
 except serial.SerialException:
     print("ERROR: Unable to connect to serial port. Check USB connection.")
-    exit()
+    # exit()
 
 # Ensure values stay within a specified range
 def clamp(value, min_value, max_value):

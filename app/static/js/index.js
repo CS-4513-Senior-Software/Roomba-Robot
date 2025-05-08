@@ -6,6 +6,8 @@ let FB_idx = 1;
 let PAN_idx = 2;
 let TILT_idx = 3;
 
+// let activeInput = "none"; // Tracks the active input method i.e., gamepad, joystick, or keyboard
+
 function sendWriteRequest(msg) {
     fetch('/writeRequest', {
         method: 'POST',
@@ -24,7 +26,6 @@ function sendWriteRequest(msg) {
 
 // runs every 20 ms
 function update() {
-
     // ensure axis_value LR and FB elements do not go outside the range [-1, 1]
     for (let i = 0; i < axis_values.length; i++) {
         if (axis_values[i] > 1) {
@@ -86,6 +87,7 @@ function handleJoystick(joystick, side) {
     });
 
     joystickLeft.on('end', function () {
+        activeInput = "joystick";
         axis_values = [0, 0, 0, 0];  // Stop movement
     });
 
@@ -98,7 +100,6 @@ handleJoystick(joystickLeft, "left");
 handleJoystick(joystickRight, "right");
 
 // keyboard controls
-
 document.addEventListener("keydown", function(e) {
     if (e.repeat) return;
     
@@ -171,6 +172,52 @@ function equals(arr1, arr2) {
     return true;
 }
 
+// Clamping function to ensure values are within a specified range
+function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}
+
+function round(num, places) {
+    let multiplier = 10**places
+    return Math.round((num + Number.EPSILON) * multiplier) / multiplier;
+}
+
+// Polling for gamepad input
+function pollGamepad() {
+    const gamepads = navigator.getGamepads();
+    if (gamepads[0]) { // Use the first connected gamepad
+        const gamepad = gamepads[0];
+
+        // Map gamepad axes to robot controls with clamping and dead zone
+        axis_values[LR_idx] = Math.abs(gamepad.axes[0]) > 0.1 ? round(clamp(gamepad.axes[0], -1, 1), 2) * -1 : 0;  // Left/Right (LR)
+        axis_values[FB_idx] = Math.abs(gamepad.axes[1]) > 0.1 ? round(clamp(-gamepad.axes[1], -1, 1), 2) : 0; // Forward/Backward (FB) (invert Y-axis)
+        axis_values[PAN_idx] = Math.abs(gamepad.axes[2]) > 0.1 ? round(clamp(gamepad.axes[2], -1, 1), 2) : 0; // Pan
+        axis_values[TILT_idx] = Math.abs(gamepad.axes[5]) > 0.1 ? round(clamp(-gamepad.axes[5], -1, 1), 2) : 0; // Tilt (invert Y-axis)
+    }
+
+    requestAnimationFrame(pollGamepad); // Continue polling
+}
+
+function startOptiTrack() {
+    fetch('/startOptiTrack', {method: 'POST'})
+    .then(response => {response.json(); console.log(response)})
+    .then(data => {})
+    .catch(error => console.error("Error:", error));
+}
+
+window.addEventListener("gamepadconnected", (event) => {
+    console.log("Gamepad connected:", event.gamepad);
+});
+
+window.addEventListener("gamepaddisconnected", (event) => {
+    console.log("Gamepad disconnected:", event.gamepad);
+    axis_values = [0, 0, 0, 0]; // Reset axis values
+});
+
+
+pollGamepad(); // Start polling for gamepad input
+
+update(); // start update loop
 // Toggle Camera vs Map View
 document.getElementById("changeViewBtn").addEventListener("click", () => {
     const camera = document.getElementById("camera-feed");
