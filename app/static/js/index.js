@@ -218,3 +218,59 @@ window.addEventListener("gamepaddisconnected", (event) => {
 pollGamepad(); // Start polling for gamepad input
 
 update(); // start update loop
+// Toggle Camera vs Map View
+document.getElementById("changeViewBtn").addEventListener("click", () => {
+    const camera = document.getElementById("camera-feed");
+    const map = document.getElementById("map-view");
+    const joystickContainer = document.getElementById("joystick-container");
+
+    const showingCamera = camera.style.display !== "none";
+    camera.style.display = showingCamera ? "none" : "block";
+    joystickContainer.style.display = showingCamera ? "none" : "flex";
+    map.style.display = showingCamera ? "block" : "none";
+});
+
+function runAutomation(action) {
+    console.log("Running automation:", action);
+
+    switch(action) {
+        case 'nod':
+            // Tilt up
+            axis_values[TILT_idx] = -1;
+            sendWriteRequest(axis_values);
+            setTimeout(() => {
+                // Tilt down
+                axis_values[TILT_idx] = 1;
+                sendWriteRequest(axis_values);
+                setTimeout(() => {
+                    // Stop movement
+                    axis_values[TILT_idx] = 0;
+                    sendWriteRequest(axis_values);
+                }, 500);
+            }, 500);
+            break;
+
+        case 'shake':
+            // Pan right
+            axis_values[PAN_idx] = 1;
+            sendWriteRequest(axis_values);
+            setTimeout(() => {
+                // Pan left
+                axis_values[PAN_idx] = -1;
+                sendWriteRequest(axis_values);
+                setTimeout(() => {
+                    // Stop movement
+                    axis_values[PAN_idx] = 0;
+                    sendWriteRequest(axis_values);
+                }, 500);
+            }, 500);
+            break;
+
+        case 'race':
+            // Placeholder for Opti Track Lab Laps
+            console.log("Race mode coming soon!");
+            break;
+    }
+}
+
+update(); // start update loop
