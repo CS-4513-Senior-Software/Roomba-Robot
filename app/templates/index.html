@@ -5,23 +5,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roomba Control Interface</title>
+    <script src="{{ url_for('static', filename='js/nipplejs.min.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 
 <body>
 
-    <!-- Camera Feed Placeholder -->
-    <img id="camera-feed" src="{{ url_for('videoFeed') }}" width="640" height="480">
+<!-- Change View Button -->
+<button id="changeViewBtn" class="controlbtn">
+    Change View
+  </button>
+  
+<!-- Camera Feed -->
+<img id="camera-feed" src="{{ url_for('videoFeed') }}" width="640" height="480">
 
-    <!-- Joystick Controls -->
-    <div id="joystick-container">
-        <div id="joystick-left"></div>
-        <div id="joystick-right"></div>
+<!-- Map View (initially hidden) -->
+<div id="map-view">
+    <p>[OptiTrack point and click map coming soon]</p>
+</div>
+
+<!-- Joystick Controls -->
+<div id="joystick-container">
+    <div id="joystick-left"></div>
+    <div id="joystick-right"></div>
+</div>
+    
+<!-- Automation Drop-Up Menu -->
+<div id="automation-menu">
+    <button class="dropbtn">Automation</button>
+    <div class="dropup-content">
+        <a href="#" onclick="runAutomation('nod')">Nod Yes</a>
+        <a href="#" onclick="runAutomation('shake')">Shake No</a>
+        <a href="#" onclick="runAutomation('race')">Race</a>
     </div>
-
-    <!-- Battery Percentage Display -->
-    <div id="battery">Battery: 100%</div>
+</div>
 
     <!-- Start OptiTrack Button -->
      <button onclick="startOptiTrack()">Start OptiTrack</button>
