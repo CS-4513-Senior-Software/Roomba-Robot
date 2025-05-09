@@ -60,7 +60,7 @@ def receive_new_frame(data_dict):
 def start():
 
     optionsDict = {}
-    optionsDict["clientAddress"] = "192.168.1.232"
+    optionsDict["clientAddress"] = "192.168.1.234"
     optionsDict["serverAddress"] = "192.168.1.10"
     optionsDict["use_multicast"] = False
 

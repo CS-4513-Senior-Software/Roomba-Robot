@@ -188,25 +188,24 @@ def move_to_endpoint(x_end, y_end, tolerance=0.1):
             last_angle_diff = None
             while abs(angles_to_rotate) > 10: # rotate while not aligned
                 # Get the current position and orientation from OptiTrack data
-                with open('otData.csv', mode='r') as file:
-                    reader = csv.reader(file)
+                # with open('otData.csv', mode='r') as file:
+                #     reader = csv.reader(file)
 
-                    for row in reader:
-                        if len(row) >= 6:
-                            otData["x"] = float(row[0])
-                            otData["y"] = float(row[1])
-                            otData["z"] = float(row[2])
-                            otData["roll"] = float(row[3])
-                            otData["pitch"] = float(row[4])
-                            # otData["yaw"] = (float(row[5]) + float(180))
-                            otData["yaw"] = ((float(row[5]) + 180) % 360) - 180
+                #     for row in reader:
+                #         if len(row) >= 6:
+                #             otData["x"] = float(row[0])
+                #             otData["y"] = float(row[1])
+                #             otData["z"] = float(row[2])
+                #             otData["roll"] = float(row[3])
+                #             otData["pitch"] = float(row[4])
+                #             # otData["yaw"] = (float(row[5]) + float(180))
+                #             otData["yaw"] = ((float(row[5]) + 180) % 360) - 180
                 # current_angle = otData["yaw"]
                 # target_angle = calculate_angle(x_start, y_start, x_end, y_end)
                 x_start, y_start = otData["x"], otData["y"]
                 current_angle = otData["yaw"]
                 target_angle = calculate_angle(x_start, y_start, x_end, y_end)
                 movingForward = False
-                print("test")
                 current_angle = otData["yaw"]
                 # angles_to_rotate = target_angle - current_angle
                 angles_to_rotate = calculate_rotation(current_angle, target_angle)
@@ -218,9 +217,9 @@ def move_to_endpoint(x_end, y_end, tolerance=0.1):
                 print("z " + str(otData["z"]))
 
                 # added check for oscillation
-                if last_angle_diff is not None and abs(angles_to_rotate - last_angle_diff) < 0.5:
-                    print("Detected angle oscillation, exiting rotation loop.")
-                    break
+                # if last_angle_diff is not None and abs(angles_to_rotate - last_angle_diff) < 0.5:
+                #     print("Detected angle oscillation, exiting rotation loop.")
+                #     break
                 last_angle_diff = angles_to_rotate
                 
                 # Determine shortest direction to rotate
@@ -260,16 +259,25 @@ def digital_write(axis_values: list[int], easing = False, n_steps = 15):
     global prev_bool_byte
     global ser
     
+    if axis_values == prev_integers:
+        return
+    
     try:
         if len(axis_values) != 4:
             raise DigitalWriteException("Length of axis_values array must be equal to 4.")
 
-        if (ser.in_waiting > 0):
-            line = ser.readline().decode('utf-8').strip()
-            print("test")
-            print(line)
+        # if (ser.in_waiting > 0):
+        #     try:
+        #         ser.readline()
+        #     except:
+        #         print("hit serial exception")
+        #         pass
+            # line = ser.readline().decode('utf-8').strip()
+            # print(line)
 
+        print("axis_values: " + str(axis_values))
         data = get_integers_bool(axis_values)
+        print(data)
         endInts = data["ints"]
         bool_byte = data["bool_byte"]
     
@@ -277,6 +285,7 @@ def digital_write(axis_values: list[int], easing = False, n_steps = 15):
             data = struct.pack('>BIIIIB',0xFF, *endInts, bool_byte)
             # print("writing")
             ser.write(data)
+            ser.flush()
             return
     except serial.SerialException as e:
         print(f"Serial Exception: {e}")
@@ -298,6 +307,7 @@ def digital_write(axis_values: list[int], easing = False, n_steps = 15):
             prev_integers[j] += stepSize
             data = struct.pack('>BIIIIB',0xFF, *prev_integers, bool_byte)
             ser.write(data)
+            ser.flush()
     
     # Possible changes
     # for i in range(n_steps):
@@ -464,3 +474,5 @@ except KeyboardInterrupt:
     print("Exiting...")
 finally:
     print("Exiting...")
+    
+print("end")
