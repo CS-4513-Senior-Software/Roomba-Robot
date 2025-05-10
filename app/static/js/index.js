@@ -67,7 +67,22 @@ canvas.addEventListener('click', (event) => {
     const y = event.clientY - rect.top;
 
     const cartesianCoords = canvasToCartesian(x, y);
-    alert(`You clicked at Cartesian coordinates: (${cartesianCoords.x.toFixed(2)}, ${cartesianCoords.y.toFixed(2)})`);
+
+    let x_cor = cartesianCoords.x.toFixed(2);
+    let y_cor = cartesianCoords.y.toFixed(2);
+
+    fetch('/sendOtCoords', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: {
+            x: x_cor,
+            y: y_cor
+        } })  // Send data as JSON
+    })
+    .then(response => response.json())
+    .then(data => {})
+    .catch(error => console.error("Error:", error));
+    // alert(`You clicked at Cartesian coordinates: (${cartesianCoords.x.toFixed(2)}, ${cartesianCoords.y.toFixed(2)})`);
 });
 
 // Initial draw

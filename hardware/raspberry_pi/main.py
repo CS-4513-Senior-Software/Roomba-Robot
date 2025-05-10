@@ -130,7 +130,8 @@ def calculate_rotation(current_angle, target_angle):
     """Return the shortest signed angle difference in degrees."""
     return ((target_angle - current_angle + 180) % 360) - 180
 
-def move_to_endpoint(x_end, y_end, tolerance=0.1):
+def move_to_endpoint(x_end, y_end, tolerance=0.5):
+    print("\n"*10000)
     """
     Navigate the robot to the specified endpoint.
     :param x_end: Target x-coordinate.

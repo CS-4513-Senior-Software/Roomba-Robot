@@ -40,5 +40,17 @@ def startOptiTrack():
     
     return jsonify({'message': 'Starting OptiTrack...'})
 
+@app.route('/sendOtCoords', methods=['POST'])
+def sendOtCoords():
+    data = request.json
+    msg = data["message"]
+    x = msg["x"]
+    y = msg["y"]
+    
+    ot.setTarget(x, y)
+    print(f"Set coords to {x}, {y}")
+    
+    return jsonify({'message': 'Data received successfully', 'data': data})  # Send response
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=8080)

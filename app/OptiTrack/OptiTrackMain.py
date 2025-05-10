@@ -29,6 +29,15 @@ import app.OptiTrack.MoCapData
 
 from hardware.raspberry_pi.main import setOtData, move_to_endpoint
 
+target_x = 0
+target_y = 0
+
+def setTarget(x, y):
+    global target_x
+    global target_y
+    target_x = float(x)
+    target_y = float(y)
+
 # This is a callback function that gets connected to the NatNet client. It is called once per rigid body per frame
 def receive_rigid_body_frame( new_id, position, rotation ):
     x, y, z = position
@@ -58,6 +67,8 @@ def receive_new_frame(data_dict):
 
 # start motion capture
 def start():
+    global target_x
+    global target_y
 
     optionsDict = {}
     optionsDict["clientAddress"] = "192.168.1.234"
@@ -92,7 +103,7 @@ def start():
         finally:
             print("exiting")
     
-    move_to_endpoint(3, 3)
+    move_to_endpoint(target_x, target_y)
          
     # Check connection status
     while True:
