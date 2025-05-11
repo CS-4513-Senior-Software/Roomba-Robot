@@ -9,16 +9,15 @@ Feburary-May 2025
 ## Team Members
 Anastasia Reed, Back-End Developer
 
+<img src="https://github.com/user-attachments/assets/13c7c4b5-01e1-4857-8cd6-e8916faf0d29" alt="Anastasia Reed" width="250"/>
+
 Bio: I am a Computer Science major, minoring in Mathematics. When I'm not working or studying, I'm usually reading, playing video games, or painting.
 
 Caleb Tietz, Back-End Lead
 
-Picture:
-
 <img src="https://github.com/user-attachments/assets/067086dd-c7e4-44c0-bdff-881d97af4194" alt="Caleb Tietz" width="250"/>
 
 Bio: I am a Computer Science major with a minor in mathematics. I currently work at my church and as a math tutor. When I'm not at school or work, I'm usually spending time with my fiancé, playing board games or video games, or writing hobby code projects.
-
 
 Rhea Katari, Front-End Developer
 
