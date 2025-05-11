@@ -2,18 +2,9 @@ from flask import *
 import sys
 import os
 from app.OptiTrack import OptiTrackMain as ot
-
-# subprocess.run(["python", "../hardware/raspberry_pi/main.py"])  # Runs script.py as a separate process
-
-
-# script_dir = os.path.dirname(os.path.abspath(__file__))  # Current script dir
-# raspberry_pi_path = os.path.abspath(os.path.join(script_dir, "../hardware/raspberry_pi"))
-# sys.path.append(raspberry_pi_path)
-
 from hardware.raspberry_pi.main import digital_write, generate_frames
 
-
-app = Flask(__name__)
+app = Flask(__name__, static_folder='app/static', template_folder='app/templates')
 
 @app.route("/")
 def home():
@@ -39,6 +30,18 @@ def startOptiTrack():
     ot.start()
     
     return jsonify({'message': 'Starting OptiTrack...'})
+
+@app.route('/sendOtCoords', methods=['POST'])
+def sendOtCoords():
+    data = request.json
+    msg = data["message"]
+    x = msg["x"]
+    y = msg["y"]
+    
+    ot.setTarget(x, y)
+    print(f"Set coords to {x}, {y}")
+    
+    return jsonify({'message': 'Data received successfully', 'data': data})  # Send response
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=8080)
