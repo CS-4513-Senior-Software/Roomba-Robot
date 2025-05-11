@@ -124,9 +124,6 @@ def calculate_angle(x_start, y_start, x_end, y_end):
     return angle_deg
 
 def calculate_rotation(current_angle, target_angle):
-    # """Calculate the shortest rotation direction needed to face the target angle."""
-    # angles_to_rotate = target_angle - current_angle
-    # return angles_to_rotate
     """Return the shortest signed angle difference in degrees."""
     return ((target_angle - current_angle + 180) % 360) - 180
 
@@ -150,7 +147,6 @@ def move_to_endpoint(x_end, y_end, tolerance=0.5):
         print("hit")
         
         # Get the current position and orientation from OptiTrack data
-
         x_start, y_start = otData["x"], otData["z"]
         current_angle = otData["pitch"] + 90
         
@@ -183,11 +179,8 @@ def move_to_endpoint(x_end, y_end, tolerance=0.5):
         if abs(angles_to_rotate) > 20:
 
             while abs(angles_to_rotate) > 15: # rotate while not aligned
+                
                 # Get the current position and orientation from OptiTrack data
-                
-                # if time.time() < forwardStartTime - 1:
-                #     break
-                
                 x_start, y_start = otData["x"], otData["z"]
                 current_angle = otData["pitch"] + 90
                 target_angle = calculate_angle(x_start, y_start, x_end, y_end)
@@ -199,7 +192,7 @@ def move_to_endpoint(x_end, y_end, tolerance=0.5):
                     angles_to_rotate += 90
                 angles_to_rotate -= 90
                 
-                # angles_to_rotate = calculate_rotation(current_angle, target_angle)
+                """"""
                 print("angles to rotate: " + str(angles_to_rotate))
                 print("target " + str(target_angle))
                 print("current " + str(current_angle))
@@ -207,26 +200,10 @@ def move_to_endpoint(x_end, y_end, tolerance=0.5):
                 print("y " + str(otData["y"]))
                 print("z " + str(otData["z"]))
 
-                # added check for oscillation
-                # if last_angle_diff is not None and abs(angles_to_rotate - last_angle_diff) < 0.5:
-                #     print("Detected angle oscillation, exiting rotation loop.")
-                #     break
-                
-                # Determine shortest direction to rotate
-                # if angles_to_rotate > 0:
-                #    rotation_dir = -0.1
-                # else:
-                #    rotation_dir = 0.1
-                
-                # proportional control for rotation speed
-                # rotation_dir = clamp(-0.01 * angles_to_rotate, -0.5, 0.5)
                 rotation_dir = 0.2
 
                 axis_values = [rotation_dir, 0, 0, 0] # rotate in place
                 digital_write(axis_values)
-                # if old_dir != rotation_dir:
-                #     # print("change direction")
-                #     old_dir = rotation_dir
 
         if movingForward is None:
             axis_values = [0, 0.5, 0, 0]
@@ -245,11 +222,7 @@ def move_to_endpoint(x_end, y_end, tolerance=0.5):
         else:
             axis_values = [0, -0.5, 0, 0]
             
-        # axis_values = [0, 0.5, 0, 0]
-        # if distance > startDistance + tolerance:
-        #     axis_values = [0, -0.5, 0, 0]
-            # Send movement commands using existing motor control logic
-        forwardStartTime = time.time()
+        # Send movement commands using existing motor control logic
         digital_write(axis_values)
         time.sleep(1)
 
