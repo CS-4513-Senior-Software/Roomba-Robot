@@ -38,8 +38,6 @@ Will Friedel
 
 Bio: William Friedel worked as an electrical engineer at a government contractor for four years before joining TU as ECE lab manager and instructor of digital and embedded systems in 2022.
 
-## Group Picture (add if we want)
-
 ## About the Project
 Professor William Friedel has built a robot but needs the software to be developed to make the robot autonomous in an OptiTrack environment. The robot is built on a Roomba frame and includes an Arduino and Raspberry Pi to control its movements, as well as a camera on top for visuals. 
 
